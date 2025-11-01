@@ -72,6 +72,7 @@ const port = process.env.PORT || 3000;
 migrate()
   .then(async () => {
     await ensureDefaultTeacher('mjsfutane21@gmail.com', 'abc@1234');
+    console.log('Default teacher ensured: mjsfutane21@gmail.com');
     app.listen(port, () => {
       console.log(`Attendance portal listening on http://localhost:${port}`);
     });
