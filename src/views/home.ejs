@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/styles.css">
+  <title><%= brand %> — Attendance Portal</title>
+  <style>
+    .hero{max-width:1000px;margin:48px auto;padding:24px 16px;display:grid;gap:16px;justify-items:center;text-align:center}
+    .hero-title{font-size:32px;font-weight:800;line-height:1.1;margin:0}
+    .hero-sub{color:var(--muted);max-width:740px}
+    .cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+    .cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:24px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left}
+    .foot{padding:16px;text-align:center;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><%= brand %></div>
+    <div>
+      <a href="/login" style="text-decoration:none"><button>Teacher Login</button></a>
+    </div>
+  </div>
+  <div class="hero">
+    <h1 class="hero-title">Simple, fast attendance for classrooms</h1>
+    <p class="hero-sub">Mark daily and period-wise attendance with one click. Notify parents by email/SMS. Export reports and manage classes, students, and timings with ease.</p>
+    <div class="cta">
+      <a href="/login" style="text-decoration:none"><button>Get Started</button></a>
+      <a href="/home#features" style="text-decoration:none"><button class="secondary">Learn More</button></a>
+    </div>
+    <div id="features" class="cardgrid">
+      <div class="card">
+        <div class="title">One-click Tickmarks</div>
+        <p class="muted">Daily and period-wise attendance with checkboxes and Mark-all-present.</p>
+      </div>
+      <div class="card">
+        <div class="title">Parent Notifications</div>
+        <p class="muted">Email/SMS alerts for absentees with delivery logs.</p>
+      </div>
+      <div class="card">
+        <div class="title">Reports & Exports</div>
+        <p class="muted">Per-class and per-student summaries with CSV export.</p>
+      </div>
+      <div class="card">
+        <div class="title">Easy Management</div>
+        <p class="muted">Create classes, add students, manage period timings, and bulk import via CSV.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">© <%= new Date().getFullYear() %> <%= brand %>. All rights reserved.</div>
+</body>
+</html>

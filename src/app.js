@@ -71,7 +71,12 @@ app.get('/health', (req, res) => {
 
 app.get('/', (req, res) => {
   if (req.session.user) return res.redirect('/dashboard');
-  return res.redirect('/login');
+  return res.redirect('/home');
+});
+
+app.get('/home', (req, res) => {
+  if (req.session.user) return res.redirect('/dashboard');
+  res.render('home');
 });
 
 app.use((err, req, res, next) => {
