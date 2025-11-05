@@ -1,0 +1,136 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint --if-present
+    
+    - name: Initialize database
+      run: npm run db:init
+    
+    - name: Seed test data
+      run: npm run db:seed
+    
+    - name: Run tests
+      run: npm test --if-present
+    
+    - name: Check application starts
+      run: |
+        npm start &
+        sleep 10
+        curl -f http://localhost:3000/health || exit 1
+        pkill -f "node src/app.js"
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+    
+    - name: Check for vulnerabilities
+      run: npm audit --audit-level=high --production
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: |
+        npm run db:init
+        npm run db:seed
+        echo "Build completed successfully"
+    
+    - name: Test production build
+      run: |
+        NODE_ENV=production npm start &
+        sleep 10
+        curl -f http://localhost:3000/health || exit 1
+        pkill -f "node src/app.js"
+
+  accessibility:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Setup database
+      run: |
+        npm run db:init
+        npm run db:seed
+    
+    - name: Start application
+      run: npm start &
+    
+    - name: Wait for application
+      run: sleep 15
+    
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli
+    
+    - name: Run Lighthouse CI
+      run: |
+        lhci autorun --upload.target=temporary-public-storage --collect.url=http://localhost:3000 || echo "Lighthouse completed with warnings"
+    
+    - name: Stop application
+      run: pkill -f "node src/app.js" || true

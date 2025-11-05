@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  attendancems:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - SESSION_SECRET=docker_session_secret_change_in_production
+    volumes:
+      - attendance_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - attendancems
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  attendance_data:
+    driver: local
+
+networks:
+  default:
+    name: attendancems_network
