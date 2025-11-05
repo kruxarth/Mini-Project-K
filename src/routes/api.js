@@ -203,4 +203,70 @@ router.get('/api/teacher/trend', requireAuth, async (req, res) => {
   });
   res.json(series);
 });
-export default router;
+export default router;// Per
+formance metrics for dashboard
+router.get('/api/teacher/performance', requireAuth, async (req, res) => {
+  const teacherId = req.session.user.id;
+  
+  // Weekly performance
+  const weeklyStats = await all(`
+    SELECT 
+      strftime('%W', date) as week,
+      COUNT(*) as total_records,
+      SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present_count
+    FROM attendance a
+    JOIN students s ON a.student_id = s.id
+    JOIN classes c ON s.class_id = c.id
+    WHERE c.teacher_id = ? 
+    AND date >= date('now', '-4 weeks')
+    GROUP BY week
+    ORDER BY week
+  `, [teacherId]);
+
+  // Class performance comparison
+  const classPerformance = await all(`
+    SELECT 
+      c.name as class_name,
+      COUNT(a.id) as total_records,
+      SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) as present_count,
+      ROUND(
+        (SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) * 100.0 / COUNT(a.id)), 2
+      ) as attendance_rate
+    FROM classes c
+    LEFT JOIN students s ON c.id = s.class_id
+    LEFT JOIN attendance a ON s.id = a.student_id
+    WHERE c.teacher_id = ?
+    AND (a.date IS NULL OR a.date >= date('now', '-30 days'))
+    GROUP BY c.id, c.name
+    ORDER BY attendance_rate DESC
+  `, [teacherId]);
+
+  res.json({
+    weekly: weeklyStats,
+    classes: classPerformance
+  });
+});
+
+// Recent activities
+router.get('/api/teacher/activities', requireAuth, async (req, res) => {
+  const teacherId = req.session.user.id;
+  
+  const activities = await all(`
+    SELECT 
+      'attendance' as type,
+      c.name as class_name,
+      COUNT(*) as count,
+      date as activity_date,
+      'Attendance marked for ' || c.name as description
+    FROM attendance a
+    JOIN students s ON a.student_id = s.id
+    JOIN classes c ON s.class_id = c.id
+    WHERE c.teacher_id = ?
+    AND date >= date('now', '-7 days')
+    GROUP BY date, c.id
+    ORDER BY date DESC, c.name
+    LIMIT 10
+  `, [teacherId]);
+
+  res.json(activities);
+});

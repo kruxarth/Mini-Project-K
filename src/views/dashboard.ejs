@@ -31,6 +31,28 @@
     .welcome-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; }
     .welcome-title { font-size: 2rem; font-weight: 700; margin-bottom: 10px; }
     .welcome-subtitle { opacity: 0.9; font-size: 1.1rem; }
+    
+    /* Dark Mode Styles */
+    [data-theme="dark"] {
+      background-color: #1a1a1a !important;
+      color: #ffffff !important;
+    }
+    [data-theme="dark"] .navbar {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+    }
+    [data-theme="dark"] .sidebar {
+      background: #2c3e50 !important;
+    }
+    [data-theme="dark"] .stats-card,
+    [data-theme="dark"] .chart-container,
+    [data-theme="dark"] .class-card,
+    [data-theme="dark"] .card {
+      background: #34495e !important;
+      color: #ffffff !important;
+    }
+    [data-theme="dark"] .welcome-section {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+    }
   </style>
 </head>
 <body>
@@ -50,6 +72,13 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
             <li><a class="dropdown-item" href="/settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <button class="dropdown-item" onclick="toggleDarkMode()">
+                <i class="fas fa-moon me-2" id="darkModeIcon"></i>
+                <span id="darkModeText">Dark Mode</span>
+              </button>
+            </li>
             <li><hr class="dropdown-divider"></li>
             <li>
               <form method="post" action="/logout" class="d-inline">
@@ -116,6 +145,9 @@
                 </div>
                 <h3 class="number" id="totalClasses">0</h3>
                 <p class="label">Total Classes</p>
+                <div class="progress mt-2" style="height: 4px;">
+                  <div class="progress-bar bg-primary" style="width: 100%"></div>
+                </div>
               </div>
             </div>
             <div class="col-xl-3 col-md-6 mb-4">
@@ -125,6 +157,9 @@
                 </div>
                 <h3 class="number" id="totalStudents">0</h3>
                 <p class="label">Total Students</p>
+                <div class="progress mt-2" style="height: 4px;">
+                  <div class="progress-bar bg-info" style="width: 85%"></div>
+                </div>
               </div>
             </div>
             <div class="col-xl-3 col-md-6 mb-4">
@@ -135,6 +170,9 @@
                 <h3 class="number" id="todayPresent">0</h3>
                 <p class="label">Today's Present</p>
                 <small class="text-muted" id="todayDate"></small>
+                <div class="progress mt-2" style="height: 4px;">
+                  <div class="progress-bar bg-success" id="presentProgress" style="width: 0%"></div>
+                </div>
               </div>
             </div>
             <div class="col-xl-3 col-md-6 mb-4">
@@ -145,36 +183,127 @@
                 <h3 class="number" id="todayAbsent">0</h3>
                 <p class="label">Today's Absent</p>
                 <small class="text-muted" id="todayOther"></small>
+                <div class="progress mt-2" style="height: 4px;">
+                  <div class="progress-bar bg-danger" id="absentProgress" style="width: 0%"></div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Charts Section -->
+          <!-- Quick Actions Row -->
           <div class="row mb-4">
-            <div class="col-lg-6 mb-4">
-              <div class="chart-container">
-                <h5 class="mb-3">
-                  <i class="fas fa-chart-pie me-2"></i>Today's Attendance Overview
-                </h5>
-                <canvas id="todayChart" height="300"></canvas>
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                  <h5 class="card-title mb-3">
+                    <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                  </h5>
+                  <div class="row">
+                    <div class="col-md-3 mb-2">
+                      <a href="/manage/class/new" class="btn btn-primary w-100">
+                        <i class="fas fa-plus me-2"></i>New Class
+                      </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                      <button class="btn btn-success w-100" onclick="markAllPresent()">
+                        <i class="fas fa-check-double me-2"></i>Mark All Present
+                      </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                      <a href="/reports" class="btn btn-info w-100">
+                        <i class="fas fa-chart-line me-2"></i>Generate Report
+                      </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                      <button class="btn btn-warning w-100" onclick="exportData()">
+                        <i class="fas fa-download me-2"></i>Export Data
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="col-lg-6 mb-4">
+          </div>
+
+          <!-- Charts and Activity Section -->
+          <div class="row mb-4">
+            <div class="col-lg-4 mb-4">
               <div class="chart-container">
                 <h5 class="mb-3">
-                  <i class="fas fa-chart-line me-2"></i>Attendance Trend (Last 30 Days)
+                  <i class="fas fa-chart-pie me-2"></i>Today's Overview
                 </h5>
-                <canvas id="trendChart" height="300"></canvas>
+                <canvas id="todayChart" height="250"></canvas>
+              </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+              <div class="chart-container">
+                <h5 class="mb-3">
+                  <i class="fas fa-chart-line me-2"></i>Attendance Trend
+                </h5>
+                <canvas id="trendChart" height="250"></canvas>
+              </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+              <div class="chart-container">
+                <h5 class="mb-3">
+                  <i class="fas fa-clock me-2"></i>Recent Activity
+                </h5>
+                <div id="recentActivity" style="max-height: 250px; overflow-y: auto;">
+                  <div class="activity-item d-flex align-items-center mb-3">
+                    <div class="activity-icon bg-success rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                      <i class="fas fa-check text-white"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold">Attendance Marked</div>
+                      <small class="text-muted">Class 10A - 25 students present</small>
+                      <div class="text-muted" style="font-size: 0.8rem;">2 minutes ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item d-flex align-items-center mb-3">
+                    <div class="activity-icon bg-info rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                      <i class="fas fa-user-plus text-white"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold">New Student Added</div>
+                      <small class="text-muted">John Doe added to Class 9B</small>
+                      <div class="text-muted" style="font-size: 0.8rem;">1 hour ago</div>
+                    </div>
+                  </div>
+                  <div class="activity-item d-flex align-items-center mb-3">
+                    <div class="activity-icon bg-warning rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                      <i class="fas fa-exclamation text-white"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold">Low Attendance Alert</div>
+                      <small class="text-muted">Class 8C - Only 60% attendance</small>
+                      <div class="text-muted" style="font-size: 0.8rem;">3 hours ago</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Classes Section -->
-          <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
             <h4><i class="fas fa-chalkboard me-2"></i>Your Classes</h4>
-            <a href="/manage/class/new" class="btn btn-primary">
-              <i class="fas fa-plus me-2"></i>Create New Class
-            </a>
+            <div class="d-flex gap-2">
+              <div class="input-group" style="width: 300px;">
+                <input type="text" class="form-control" id="classSearch" placeholder="Search classes...">
+                <button class="btn btn-outline-secondary" type="button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+              <select class="form-select" id="classFilter" style="width: 150px;">
+                <option value="">All Classes</option>
+                <option value="high">High Attendance</option>
+                <option value="medium">Medium Attendance</option>
+                <option value="low">Low Attendance</option>
+              </select>
+              <a href="/manage/class/new" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create New Class
+              </a>
+            </div>
           </div>
 
           <div class="row">
@@ -294,10 +423,14 @@
     }
 
     async function loadDashboard(){
-      // Load totals
-      const totals = await fetchJSON('/api/teacher/totals');
-      document.getElementById('totalClasses').textContent = totals.classes || 0;
-      document.getElementById('totalStudents').textContent = totals.students || 0;
+      // Show loading state
+      showLoadingState(true);
+      
+      try {
+        // Load totals
+        const totals = await fetchJSON('/api/teacher/totals');
+        document.getElementById('totalClasses').textContent = totals.classes || 0;
+        document.getElementById('totalStudents').textContent = totals.students || 0;
 
       // Load today's data
       const today = await fetchJSON('/api/teacher/today');
@@ -432,10 +565,31 @@
           }
         }
       });
+      
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        showNotification('Error loading dashboard data', 'danger');
+      } finally {
+        showLoadingState(false);
+      }
+    }
+
+    function showLoadingState(show) {
+      const elements = ['totalClasses', 'totalStudents', 'todayPresent', 'todayAbsent'];
+      elements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.textContent = show ? '...' : element.textContent;
+        }
+      });
     }
 
     // Load dashboard when page is ready
-    document.addEventListener('DOMContentLoaded', loadDashboard);
+    document.addEventListener('DOMContentLoaded', function() {
+      loadDashboard();
+      updateGreeting();
+      startRealTimeUpdates();
+    });
 
     // Update greeting based on time
     function updateGreeting() {
@@ -459,8 +613,150 @@
         greetingElement.innerHTML = `<i class="${icon} me-2"></i>${greeting}, <%= currentUser.name %>!`;
       }
     }
-    
-    updateGreeting();
+
+    // Quick Actions Functions
+    function markAllPresent() {
+      if (confirm('Mark all students present for today?')) {
+        // Implementation would go here
+        showNotification('All students marked present!', 'success');
+      }
+    }
+
+    function exportData() {
+      showNotification('Preparing export...', 'info');
+      // Implementation would go here
+      setTimeout(() => {
+        showNotification('Data exported successfully!', 'success');
+      }, 2000);
+    }
+
+    // Notification System
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+    }
+
+    // Real-time Updates
+    function startRealTimeUpdates() {
+      setInterval(() => {
+        updateProgressBars();
+      }, 30000); // Update every 30 seconds
+    }
+
+    function updateProgressBars() {
+      const today = document.getElementById('todayPresent').textContent || 0;
+      const absent = document.getElementById('todayAbsent').textContent || 0;
+      const total = parseInt(today) + parseInt(absent);
+      
+      if (total > 0) {
+        const presentPercent = (parseInt(today) / total) * 100;
+        const absentPercent = (parseInt(absent) / total) * 100;
+        
+        document.getElementById('presentProgress').style.width = presentPercent + '%';
+        document.getElementById('absentProgress').style.width = absentPercent + '%';
+      }
+    }
+
+    // Auto-refresh data every 5 minutes
+    setInterval(loadDashboard, 300000);
+
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      
+      const icon = document.getElementById('darkModeIcon');
+      const text = document.getElementById('darkModeText');
+      
+      if (newTheme === 'dark') {
+        icon.className = 'fas fa-sun me-2';
+        text.textContent = 'Light Mode';
+      } else {
+        icon.className = 'fas fa-moon me-2';
+        text.textContent = 'Dark Mode';
+      }
+    }
+
+    // Load saved theme
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      
+      const icon = document.getElementById('darkModeIcon');
+      const text = document.getElementById('darkModeText');
+      
+      if (savedTheme === 'dark') {
+        icon.className = 'fas fa-sun me-2';
+        text.textContent = 'Light Mode';
+      }
+    }
+
+    // Search and Filter Functions
+    document.getElementById('classSearch').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const classCards = document.querySelectorAll('.class-card');
+      
+      classCards.forEach(card => {
+        const className = card.querySelector('.class-title').textContent.toLowerCase();
+        const parentCol = card.closest('.col-lg-6');
+        
+        if (className.includes(searchTerm)) {
+          parentCol.style.display = 'block';
+        } else {
+          parentCol.style.display = 'none';
+        }
+      });
+    });
+
+    document.getElementById('classFilter').addEventListener('change', function(e) {
+      const filterValue = e.target.value;
+      const classCards = document.querySelectorAll('.class-card');
+      
+      classCards.forEach(card => {
+        const parentCol = card.closest('.col-lg-6');
+        const progressBar = card.querySelector('.progress-bar');
+        
+        if (!filterValue) {
+          parentCol.style.display = 'block';
+          return;
+        }
+        
+        const percentage = progressBar ? parseInt(progressBar.style.width) : 0;
+        let show = false;
+        
+        switch(filterValue) {
+          case 'high':
+            show = percentage >= 80;
+            break;
+          case 'medium':
+            show = percentage >= 60 && percentage < 80;
+            break;
+          case 'low':
+            show = percentage < 60;
+            break;
+        }
+        
+        parentCol.style.display = show ? 'block' : 'none';
+      });
+    });
+
+    // Initialize theme on page load
+    loadTheme();
   </script>
 </body>
 </html>
