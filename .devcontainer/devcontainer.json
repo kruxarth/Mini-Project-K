@@ -1,0 +1,24 @@
+{
+  "name": "Attendance Portal",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Attendance Portal",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "npm install && npm run db:init && npm run db:seed",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-json"
+      ]
+    }
+  }
+}
