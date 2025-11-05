@@ -203,8 +203,8 @@ router.get('/api/teacher/trend', requireAuth, async (req, res) => {
   });
   res.json(series);
 });
-export default router;// Per
-formance metrics for dashboard
+
+// Performance metrics for dashboard
 router.get('/api/teacher/performance', requireAuth, async (req, res) => {
   const teacherId = req.session.user.id;
   
@@ -269,4 +269,5 @@ router.get('/api/teacher/activities', requireAuth, async (req, res) => {
   `, [teacherId]);
 
   res.json(activities);
-});
+});expo
+rt default router;
