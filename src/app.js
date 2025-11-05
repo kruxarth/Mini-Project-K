@@ -88,30 +88,18 @@ app.use((err, req, res, next) => {
   res.status(500).send('Internal Server Error');
 });
 
-// Initialize database
-let dbInitialized = false;
-async function initDB() {
-  if (!dbInitialized) {
-    await migrate();
+// Initialize database once on startup
+migrate()
+  .then(async () => {
     await ensureDefaultTeacher('mjsfutane21@gmail.com', 'abc@1234');
-    dbInitialized = true;
-  }
-}
-
-// Middleware to ensure DB is initialized
-app.use(async (req, res, next) => {
-  try {
-    await initDB();
-    next();
-  } catch (error) {
-    console.error('DB initialization error:', error);
-    res.status(500).send('Database initialization failed');
-  }
-});
+    console.log('Database initialized successfully');
+  })
+  .catch((e) => {
+    console.error('Failed to initialize database:', e);
+    process.exit(1);
+  });
 
 const port = process.env.PORT || 3000;
-
-// Start server
 app.listen(port, () => {
   console.log(`Attendance portal listening on port ${port}`);
 });
