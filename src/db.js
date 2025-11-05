@@ -108,6 +108,22 @@ async function migrate() {
     }
   }
 
+  // Add new columns to attendance table
+  const attendanceColumnsToAdd = [
+    { name: 'session_time', type: 'TEXT' },
+    { name: 'marked_at', type: 'TEXT DEFAULT (datetime(\'now\'))' },
+    { name: 'marked_by', type: 'INTEGER' }
+  ];
+
+  for (const column of attendanceColumnsToAdd) {
+    try {
+      await run(`ALTER TABLE attendance ADD COLUMN ${column.name} ${column.type}`);
+      console.log(`Added attendance column: ${column.name}`);
+    } catch (e) { 
+      // Column already exists, which is fine
+    }
+  }
+
   await run(`CREATE TABLE IF NOT EXISTS teachers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -213,13 +229,17 @@ async function migrate() {
   await run(`CREATE TABLE IF NOT EXISTS attendance (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
+    session_time TEXT,
     class_id INTEGER NOT NULL,
     student_id INTEGER NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('present','absent','late','excused')),
     note TEXT,
-    UNIQUE(date, student_id),
+    marked_at TEXT DEFAULT (datetime('now')),
+    marked_by INTEGER,
+    UNIQUE(date, session_time, student_id),
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (marked_by) REFERENCES teachers(id)
   );`);
 
   await run(`CREATE TABLE IF NOT EXISTS notification_log (
