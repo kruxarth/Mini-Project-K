@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .faq-category { margin-bottom: 40px; }
+    .faq-item { border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 10px; }
+    .faq-question { background: #f8f9fa; padding: 20px; cursor: pointer; border-radius: 8px 8px 0 0; transition: background-color 0.3s; }
+    .faq-question:hover { background: #e9ecef; }
+    .faq-answer { padding: 20px; display: none; border-top: 1px solid #dee2e6; }
+    .faq-answer.show { display: block; }
+    .search-box { background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">Frequently Asked Questions</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <h1 class="mb-4"><i class="fas fa-question-circle me-3 text-primary"></i>Frequently Asked Questions</h1>
+      
+      <p class="lead mb-4">Find quick answers to the most common questions about the attendance management system.</p>
+
+      <!-- Search Box -->
+      <div class="search-box">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control" id="faqSearch" placeholder="Search FAQs...">
+        </div>
+        <small class="text-muted">Type keywords to quickly find relevant questions</small>
+      </div>
+
+      <!-- Getting Started FAQs -->
+      <div class="faq-category">
+        <h2 class="h3 mb-4"><i class="fas fa-rocket me-2 text-success"></i>Getting Started</h2>
+        
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">How do I log in to the system?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>To log in to the attendance management system:</p>
+            <ol>
+              <li>Go to the login page (usually the homepage)</li>
+              <li>Enter your email address and password provided by your administrator</li>
+              <li>Click "Login" to access your dashboard</li>
+            </ol>
+            <p>If you don't have login credentials, contact your school administrator to get an account created.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">I forgot my password. How do I reset it?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>To reset your password:</p>
+            <ol>
+              <li>Click "Forgot Password?" on the login page</li>
+              <li>Enter your registered email address</li>
+              <li>Check your email for a password reset link</li>
+              <li>Click the link and create a new password</li>
+            </ol>
+            <p>If you don't receive the email, check your spam folder or contact support.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Why can't I see my class after logging in?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>If you can't see your class, it could be due to:</p>
+            <ul>
+              <li><strong>New Account:</strong> You haven't created any classes yet. Click "Create Class" to get started.</li>
+              <li><strong>Permission Issue:</strong> Your account might not have the right permissions. Contact your administrator.</li>
+              <li><strong>Wrong Account:</strong> Make sure you're logged in with the correct email address.</li>
+              <li><strong>Class Assignment:</strong> An administrator needs to assign classes to your account.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance FAQs -->
+      <div class="faq-category">
+        <h2 class="h3 mb-4"><i class="fas fa-check me-2 text-primary"></i>Attendance Management</h2>
+        
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Can I edit attendance after I've already saved it?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>Yes, you can edit attendance records:</p>
+            <ol>
+              <li>Go to "Reports" → "Class Reports"</li>
+              <li>Find the date you want to edit</li>
+              <li>Click the "Edit" button next to the attendance record</li>
+              <li>Make your changes and click "Update Attendance"</li>
+            </ol>
+            <p><strong>Note:</strong> All changes are logged for audit purposes, including who made the change and when.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">What's the difference between "Absent" and "Excused"?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>The attendance statuses have different meanings:</p>
+            <ul>
+              <li><strong>Present:</strong> Student is in class</li>
+              <li><strong>Absent:</strong> Student is not in class (unexcused absence)</li>
+              <li><strong>Late:</strong> Student arrived after class started</li>
+              <li><strong>Excused:</strong> Student is absent but has a valid reason (sick leave, official event, etc.)</li>
+            </ul>
+            <p>Use "Excused" for authorized absences that shouldn't count against the student's attendance record.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">How do I mark attendance for multiple periods in a day?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>For period-wise attendance:</p>
+            <ol>
+              <li>First, set up your periods in "Manage" → "Periods"</li>
+              <li>Go to your class and select "Period Attendance"</li>
+              <li>Choose the specific period you're marking</li>
+              <li>Mark attendance for that period and save</li>
+              <li>Repeat for each period</li>
+            </ol>
+            <p>This gives you more detailed tracking compared to daily attendance.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Management FAQs -->
+      <div class="faq-category">
+        <h2 class="h3 mb-4"><i class="fas fa-users me-2 text-info"></i>Student Management</h2>
+        
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">How do I fix "CSV format error" when importing students?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>CSV format errors usually occur due to:</p>
+            <ul>
+              <li><strong>Wrong column order:</strong> Ensure columns are in this exact order: name, roll_number, email, phone, parent_name, parent_phone, parent_email</li>
+              <li><strong>Missing headers:</strong> First row should contain column names</li>
+              <li><strong>Special characters:</strong> Avoid commas, quotes, or special characters in data</li>
+              <li><strong>Empty required fields:</strong> Name and roll_number are mandatory</li>
+              <li><strong>File encoding:</strong> Save as UTF-8 CSV format</li>
+            </ul>
+            <p>Download our CSV template to ensure proper formatting.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Can I have duplicate roll numbers in different classes?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>Yes, you can have the same roll number in different classes, but:</p>
+            <ul>
+              <li>Roll numbers must be unique within each individual class</li>
+              <li>The system treats each class separately</li>
+              <li>For example: Class A can have student with roll number "001" and Class B can also have a different student with roll number "001"</li>
+            </ul>
+            <p>However, it's recommended to use unique roll numbers across the entire institution to avoid confusion.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports & Notifications FAQs -->
+      <div class="faq-category">
+        <h2 class="h3 mb-4"><i class="fas fa-chart-bar me-2 text-warning"></i>Reports & Notifications</h2>
+        
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Why are SMS notifications not being sent to parents?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>SMS notifications might fail due to:</p>
+            <ul>
+              <li><strong>Incorrect phone numbers:</strong> Verify parent phone numbers are correct and include country code</li>
+              <li><strong>SMS service not configured:</strong> Administrator needs to set up SMS service (Twilio)</li>
+              <li><strong>Insufficient credits:</strong> SMS service might be out of credits</li>
+              <li><strong>Network issues:</strong> Temporary connectivity problems</li>
+              <li><strong>Blocked numbers:</strong> Some carriers block automated messages</li>
+            </ul>
+            <p>Contact your administrator to check SMS service configuration and credits.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">How do I generate a report for students with low attendance?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>To generate a low attendance report:</p>
+            <ol>
+              <li>Go to "Reports" from the main menu</li>
+              <li>Select "Low Attendance Report"</li>
+              <li>Set the attendance threshold (e.g., below 75%)</li>
+              <li>Choose the date range</li>
+              <li>Select classes to include</li>
+              <li>Click "Generate Report"</li>
+              <li>Download the report in your preferred format (PDF, Excel, CSV)</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Issues FAQs -->
+      <div class="faq-category">
+        <h2 class="h3 mb-4"><i class="fas fa-cog me-2 text-secondary"></i>Technical Issues</h2>
+        
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">The system is running slowly. What can I do?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>To improve system performance:</p>
+            <ul>
+              <li><strong>Check internet connection:</strong> Ensure stable internet connectivity</li>
+              <li><strong>Clear browser cache:</strong> Clear your browser's cache and cookies</li>
+              <li><strong>Close other tabs:</strong> Close unnecessary browser tabs</li>
+              <li><strong>Update browser:</strong> Use the latest version of your browser</li>
+              <li><strong>Try different browser:</strong> Test with Chrome, Firefox, or Edge</li>
+              <li><strong>Restart browser:</strong> Close and reopen your browser</li>
+            </ul>
+            <p>If issues persist, contact technical support.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Can I use the system on my mobile phone or tablet?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>Yes! The attendance management system is fully responsive and works on:</p>
+            <ul>
+              <li><strong>Smartphones:</strong> iOS and Android devices</li>
+              <li><strong>Tablets:</strong> iPad, Android tablets</li>
+              <li><strong>Desktop computers:</strong> Windows, Mac, Linux</li>
+              <li><strong>Laptops:</strong> All operating systems</li>
+            </ul>
+            <p>The interface automatically adapts to your screen size for optimal usability.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security & Privacy FAQs -->
+      <div class="faq-category">
+        <h2 class="h3 mb-4"><i class="fas fa-shield-alt me-2 text-danger"></i>Security & Privacy</h2>
+        
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Is my data secure in the system?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>Yes, we take data security seriously:</p>
+            <ul>
+              <li><strong>Encryption:</strong> All data is encrypted in transit and at rest</li>
+              <li><strong>Access Control:</strong> Role-based permissions ensure users only see authorized data</li>
+              <li><strong>Audit Logs:</strong> All actions are logged for security monitoring</li>
+              <li><strong>Regular Backups:</strong> Data is backed up regularly to prevent loss</li>
+              <li><strong>Secure Hosting:</strong> System hosted on secure, monitored servers</li>
+              <li><strong>Privacy Compliance:</strong> We follow data protection regulations</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">How do I change my email or phone number?</h5>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>To update your contact information:</p>
+            <ol>
+              <li>Click on your name in the top-right corner</li>
+              <li>Select "My Profile" from the dropdown</li>
+              <li>Click "Edit Profile" or "Update Information"</li>
+              <li>Change your email or phone number</li>
+              <li>Click "Save Changes"</li>
+            </ol>
+            <p>You may need to verify your new email address before the change takes effect.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Still Need Help -->
+      <div class="mt-5">
+        <div class="card bg-light">
+          <div class="card-body text-center">
+            <h3><i class="fas fa-question-circle me-2 text-primary"></i>Still Need Help?</h3>
+            <p class="mb-4">Can't find the answer you're looking for? Our support team is here to help!</p>
+            <div class="row">
+              <div class="col-md-4">
+                <a href="/help/contact" class="btn btn-primary mb-2">
+                  <i class="fas fa-envelope me-2"></i>Contact Support
+                </a>
+              </div>
+              <div class="col-md-4">
+                <a href="/help/videos" class="btn btn-success mb-2">
+                  <i class="fas fa-play me-2"></i>Watch Tutorials
+                </a>
+              </div>
+              <div class="col-md-4">
+                <a href="/help/how-to" class="btn btn-info mb-2">
+                  <i class="fas fa-book me-2"></i>How-To Guides
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function toggleFaq(element) {
+      const answer = element.nextElementSibling;
+      const icon = element.querySelector('i');
+      
+      if (answer.classList.contains('show')) {
+        answer.classList.remove('show');
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+      } else {
+        // Close all other open FAQs
+        document.querySelectorAll('.faq-answer.show').forEach(openAnswer => {
+          openAnswer.classList.remove('show');
+          const openIcon = openAnswer.previousElementSibling.querySelector('i');
+          openIcon.classList.remove('fa-chevron-up');
+          openIcon.classList.add('fa-chevron-down');
+        });
+        
+        // Open clicked FAQ
+        answer.classList.add('show');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+      }
+    }
+
+    // Search functionality
+    document.getElementById('faqSearch').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const faqItems = document.querySelectorAll('.faq-item');
+      
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question h5').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+        
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = searchTerm ? 'none' : 'block';
+        }
+      });
+      
+      // Show/hide categories based on visible items
+      document.querySelectorAll('.faq-category').forEach(category => {
+        const visibleItems = category.querySelectorAll('.faq-item[style="display: block"], .faq-item:not([style])');
+        category.style.display = (visibleItems.length > 0 || !searchTerm) ? 'block' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

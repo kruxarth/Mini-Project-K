@@ -148,9 +148,9 @@
               </div>
               <div class="col-md-4 text-end">
                 <div class="quick-actions">
-                  <button class="btn btn-light btn-sm me-2" onclick="showTour()" data-bs-toggle="tooltip" title="Take a quick tour">
+                  <a href="/help" class="btn btn-light btn-sm me-2" data-bs-toggle="tooltip" title="Access help center">
                     <i class="fas fa-question-circle me-1"></i>Help
-                  </button>
+                  </a>
                   <button class="btn btn-light btn-sm" onclick="toggleNotifications()" data-bs-toggle="tooltip" title="Toggle notifications">
                     <i class="fas fa-bell me-1"></i>Alerts
                   </button>
@@ -439,6 +439,13 @@
       </div>
     </div>
   </div>
+  <!-- Floating Help Button -->
+  <div class="position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">
+    <a href="/help" class="btn btn-primary rounded-circle shadow-lg" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;" data-bs-toggle="tooltip" title="Need help?">
+      <i class="fas fa-question fa-lg"></i>
+    </a>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>

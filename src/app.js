@@ -19,6 +19,7 @@ import emailReportsRouter from './routes/email-reports.js';
 import bulkImportRouter from './routes/bulk-import.js';
 import analyticsRouter from './routes/analytics.js';
 import profileRouter from './routes/profile.js';
+import helpRouter from './routes/help.js';
 
 dotenv.config();
 
@@ -81,6 +82,7 @@ app.use('/', emailReportsRouter);
 app.use('/', bulkImportRouter);
 app.use('/', analyticsRouter);
 app.use('/', profileRouter);
+app.use('/', helpRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ ok: true });

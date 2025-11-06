@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .version-card { background: white; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-left: 4px solid; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+    .version-card.latest { border-left-color: #10b981; }
+    .version-card.stable { border-left-color: #3b82f6; }
+    .version-card.old { border-left-color: #6b7280; }
+    .feature-new { color: #10b981; }
+    .feature-improved { color: #3b82f6; }
+    .feature-fixed { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">Release Notes</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <h1 class="mb-4"><i class="fas fa-code-branch me-3 text-primary"></i>Release Notes</h1>
+      
+      <p class="lead mb-5">Stay updated with the latest features, improvements, and bug fixes in the attendance management system.</p>
+
+      <!-- Version 1.4.0 - Latest -->
+      <div class="version-card latest">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h3 mb-1">Version 1.4.0 <span class="badge bg-success">Latest</span></h2>
+            <small class="text-muted">Released on November 6, 2025</small>
+          </div>
+          <div class="text-end">
+            <span class="badge bg-light text-dark">Current Version</span>
+          </div>
+        </div>
+        
+        <h5 class="feature-new"><i class="fas fa-plus-circle me-2"></i>New Features</h5>
+        <ul>
+          <li><strong>Comprehensive Help System:</strong> Added detailed help center with guides, FAQs, and video tutorials</li>
+          <li><strong>Advanced Analytics Dashboard:</strong> New insights and attendance trend analysis</li>
+          <li><strong>Bulk Operations:</strong> Import/export multiple classes and students simultaneously</li>
+          <li><strong>Dark Mode Support:</strong> Toggle between light and dark themes</li>
+          <li><strong>Real-time Notifications:</strong> Instant alerts for low attendance and system updates</li>
+        </ul>
+
+        <h5 class="feature-improved"><i class="fas fa-arrow-up me-2"></i>Improvements</h5>
+        <ul>
+          <li>Enhanced dashboard with better performance and loading times</li>
+          <li>Improved mobile responsiveness across all pages</li>
+          <li>Better error handling and user feedback messages</li>
+          <li>Streamlined navigation with breadcrumbs and quick actions</li>
+          <li>Enhanced CSV import validation with detailed error reporting</li>
+        </ul>
+
+        <h5 class="feature-fixed"><i class="fas fa-wrench me-2"></i>Bug Fixes</h5>
+        <ul>
+          <li>Fixed attendance saving issues on slow connections</li>
+          <li>Resolved CSV import errors with special characters</li>
+          <li>Fixed date formatting inconsistencies in reports</li>
+          <li>Corrected permission issues for parent accounts</li>
+        </ul>
+      </div>
+
+      <!-- Version 1.3.0 -->
+      <div class="version-card stable">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h3 mb-1">Version 1.3.0</h2>
+            <small class="text-muted">Released on October 15, 2025</small>
+          </div>
+        </div>
+        
+        <h5 class="feature-new"><i class="fas fa-plus-circle me-2"></i>New Features</h5>
+        <ul>
+          <li><strong>Parent Notification System:</strong> Automated SMS and email alerts to parents</li>
+          <li><strong>Weekly Reports:</strong> Automated weekly attendance summaries</li>
+          <li><strong>Period-wise Attendance:</strong> Track attendance for individual class periods</li>
+          <li><strong>Student Insights:</strong> Detailed attendance patterns and analytics</li>
+        </ul>
+
+        <h5 class="feature-improved"><i class="fas fa-arrow-up me-2"></i>Improvements</h5>
+        <ul>
+          <li>Enhanced report generation with multiple export formats</li>
+          <li>Improved user interface with better visual hierarchy</li>
+          <li>Faster data loading and processing</li>
+          <li>Better search and filtering capabilities</li>
+        </ul>
+
+        <h5 class="feature-fixed"><i class="fas fa-wrench me-2"></i>Bug Fixes</h5>
+        <ul>
+          <li>Fixed timezone issues in attendance records</li>
+          <li>Resolved duplicate student creation problems</li>
+          <li>Fixed email notification delivery issues</li>
+        </ul>
+      </div>
+
+      <!-- Version 1.2.0 -->
+      <div class="version-card stable">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h3 mb-1">Version 1.2.0</h2>
+            <small class="text-muted">Released on September 20, 2025</small>
+          </div>
+        </div>
+        
+        <h5 class="feature-new"><i class="fas fa-plus-circle me-2"></i>New Features</h5>
+        <ul>
+          <li><strong>PDF Export:</strong> Generate attendance reports in PDF format</li>
+          <li><strong>Advanced Filtering:</strong> Filter students by attendance percentage</li>
+          <li><strong>Audit Logging:</strong> Track all system changes for security</li>
+          <li><strong>Profile Management:</strong> Users can update their own profiles</li>
+        </ul>
+
+        <h5 class="feature-improved"><i class="fas fa-arrow-up me-2"></i>Improvements</h5>
+        <ul>
+          <li>Enhanced CSV import with better error messages</li>
+          <li>Improved dashboard statistics and charts</li>
+          <li>Better session management and security</li>
+        </ul>
+
+        <h5 class="feature-fixed"><i class="fas fa-wrench me-2"></i>Bug Fixes</h5>
+        <ul>
+          <li>Fixed attendance calculation errors</li>
+          <li>Resolved class creation validation issues</li>
+          <li>Fixed browser compatibility problems</li>
+        </ul>
+      </div>
+
+      <!-- Version 1.1.0 -->
+      <div class="version-card old">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h3 mb-1">Version 1.1.0</h2>
+            <small class="text-muted">Released on August 10, 2025</small>
+          </div>
+        </div>
+        
+        <h5 class="feature-new"><i class="fas fa-plus-circle me-2"></i>New Features</h5>
+        <ul>
+          <li><strong>CSV Import:</strong> Bulk import students from CSV files</li>
+          <li><strong>Class Management:</strong> Create and manage multiple classes</li>
+          <li><strong>Basic Reports:</strong> Generate attendance reports</li>
+          <li><strong>User Roles:</strong> Teacher and admin role separation</li>
+        </ul>
+
+        <h5 class="feature-improved"><i class="fas fa-arrow-up me-2"></i>Improvements</h5>
+        <ul>
+          <li>Enhanced user interface design</li>
+          <li>Better data validation</li>
+          <li>Improved error handling</li>
+        </ul>
+
+        <h5 class="feature-fixed"><i class="fas fa-wrench me-2"></i>Bug Fixes</h5>
+        <ul>
+          <li>Fixed login session issues</li>
+          <li>Resolved data saving problems</li>
+          <li>Fixed responsive design issues</li>
+        </ul>
+      </div>
+
+      <!-- Version 1.0.0 -->
+      <div class="version-card old">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h3 mb-1">Version 1.0.0 <span class="badge bg-secondary">Initial Release</span></h2>
+            <small class="text-muted">Released on July 1, 2025</small>
+          </div>
+        </div>
+        
+        <h5 class="feature-new"><i class="fas fa-plus-circle me-2"></i>Initial Features</h5>
+        <ul>
+          <li><strong>Basic Attendance Tracking:</strong> Mark students present or absent</li>
+          <li><strong>Student Management:</strong> Add and manage student records</li>
+          <li><strong>Simple Dashboard:</strong> View attendance statistics</li>
+          <li><strong>User Authentication:</strong> Secure login system</li>
+          <li><strong>Basic Reporting:</strong> Simple attendance reports</li>
+        </ul>
+      </div>
+
+      <!-- Upcoming Features -->
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0"><i class="fas fa-rocket me-2"></i>Coming Soon - Version 1.5.0</h3>
+        </div>
+        <div class="card-body">
+          <p class="mb-3">We're working on exciting new features for the next release:</p>
+          <div class="row">
+            <div class="col-md-6">
+              <h5><i class="fas fa-star text-warning me-2"></i>Planned Features</h5>
+              <ul>
+                <li>Mobile app for iOS and Android</li>
+                <li>QR code attendance scanning</li>
+                <li>Advanced analytics and predictions</li>
+                <li>Integration with school management systems</li>
+                <li>Multi-language support</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5><i class="fas fa-cogs text-info me-2"></i>Improvements</h5>
+              <ul>
+                <li>Enhanced performance and speed</li>
+                <li>Better offline support</li>
+                <li>Advanced user permissions</li>
+                <li>Improved notification system</li>
+                <li>Enhanced security features</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Expected Release:</strong> December 2025. Features may change based on user feedback.
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Section -->
+      <div class="mt-5">
+        <div class="card bg-light">
+          <div class="card-body text-center">
+            <h3><i class="fas fa-comments me-2 text-primary"></i>We Value Your Feedback</h3>
+            <p class="mb-4">Help us improve by sharing your thoughts on new features, reporting bugs, or suggesting enhancements.</p>
+            <div class="row">
+              <div class="col-md-4">
+                <a href="/help/contact" class="btn btn-primary mb-2">
+                  <i class="fas fa-bug me-2"></i>Report a Bug
+                </a>
+              </div>
+              <div class="col-md-4">
+                <a href="/help/contact" class="btn btn-success mb-2">
+                  <i class="fas fa-lightbulb me-2"></i>Suggest Feature
+                </a>
+              </div>
+              <div class="col-md-4">
+                <a href="/help/contact" class="btn btn-info mb-2">
+                  <i class="fas fa-star me-2"></i>Leave Feedback
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Version History Summary -->
+      <div class="mt-5">
+        <h3 class="mb-4">Version History Summary</h3>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>Version</th>
+                <th>Release Date</th>
+                <th>Major Features</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1.4.0</strong></td>
+                <td>Nov 6, 2025</td>
+                <td>Help System, Analytics, Dark Mode</td>
+                <td><span class="badge bg-success">Current</span></td>
+              </tr>
+              <tr>
+                <td><strong>1.3.0</strong></td>
+                <td>Oct 15, 2025</td>
+                <td>Parent Notifications, Weekly Reports</td>
+                <td><span class="badge bg-secondary">Stable</span></td>
+              </tr>
+              <tr>
+                <td><strong>1.2.0</strong></td>
+                <td>Sep 20, 2025</td>
+                <td>PDF Export, Advanced Filtering</td>
+                <td><span class="badge bg-secondary">Stable</span></td>
+              </tr>
+              <tr>
+                <td><strong>1.1.0</strong></td>
+                <td>Aug 10, 2025</td>
+                <td>CSV Import, Class Management</td>
+                <td><span class="badge bg-light text-dark">Legacy</span></td>
+              </tr>
+              <tr>
+                <td><strong>1.0.0</strong></td>
+                <td>Jul 1, 2025</td>
+                <td>Basic Attendance, User Auth</td>
+                <td><span class="badge bg-light text-dark">Legacy</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

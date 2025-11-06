@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; }
+    .help-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; transition: transform 0.3s; }
+    .help-card:hover { transform: translateY(-5px); }
+    .help-icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+    .search-box { background: white; border-radius: 50px; padding: 15px 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Help Header -->
+  <div class="help-header">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h1 class="display-4 fw-bold mb-3"><i class="fas fa-life-ring me-3"></i>Help Center</h1>
+          <p class="lead mb-4">Find answers, get support, and learn how to make the most of your attendance management system.</p>
+          <div class="search-box">
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-muted"></i></span>
+              <input type="text" class="form-control border-0" placeholder="Search for help articles..." id="helpSearch">
+              <button class="btn btn-primary" type="button">Search</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 text-center">
+          <i class="fas fa-question-circle" style="font-size: 120px; opacity: 0.3;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Categories -->
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="help-card text-center h-100">
+          <div class="help-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <i class="fas fa-rocket"></i>
+          </div>
+          <h4 class="mb-3">Getting Started</h4>
+          <p class="text-muted mb-4">Learn the basics of using the attendance management system.</p>
+          <a href="/help/getting-started" class="btn btn-primary">Get Started</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="help-card text-center h-100">
+          <div class="help-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+            <i class="fas fa-users-cog"></i>
+          </div>
+          <h4 class="mb-3">User Roles & Access</h4>
+          <p class="text-muted mb-4">Understand different user roles and permissions.</p>
+          <a href="/help/roles" class="btn btn-primary">Learn More</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="help-card text-center h-100">
+          <div class="help-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <h4 class="mb-3">How-To Guides</h4>
+          <p class="text-muted mb-4">Step-by-step instructions for common tasks.</p>
+          <a href="/help/how-to" class="btn btn-primary">View Guides</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="help-card text-center h-100">
+          <div class="help-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
+            <i class="fas fa-question-circle"></i>
+          </div>
+          <h4 class="mb-3">FAQs</h4>
+          <p class="text-muted mb-4">Quick answers to common questions.</p>
+          <a href="/help/faq" class="btn btn-primary">Browse FAQs</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="help-card text-center h-100">
+          <div class="help-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+            <i class="fas fa-tools"></i>
+          </div>
+          <h4 class="mb-3">Troubleshooting</h4>
+          <p class="text-muted mb-4">Solutions to common problems and errors.</p>
+          <a href="/help/troubleshooting" class="btn btn-primary">Get Help</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="help-card text-center h-100">
+          <div class="help-icon" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+            <i class="fas fa-play-circle"></i>
+          </div>
+          <h4 class="mb-3">Video Tutorials</h4>
+          <p class="text-muted mb-4">Watch tutorials to learn key features.</p>
+          <a href="/help/videos" class="btn btn-primary">Watch Videos</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Resources -->
+    <div class="row mt-5">
+      <div class="col-12"><h3 class="mb-4">Additional Resources</h3></div>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-headset fa-2x text-primary mb-3"></i>
+            <h6>Contact Support</h6>
+            <a href="/help/contact" class="btn btn-outline-primary btn-sm">Contact Us</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-code-branch fa-2x text-success mb-3"></i>
+            <h6>Release Notes</h6>
+            <a href="/help/release-notes" class="btn btn-outline-success btn-sm">View Updates</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-keyboard fa-2x text-warning mb-3"></i>
+            <h6>Shortcuts</h6>
+            <a href="/help/shortcuts" class="btn btn-outline-warning btn-sm">Learn More</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-shield-alt fa-2x text-info mb-3"></i>
+            <h6>Privacy Policy</h6>
+            <a href="/help/privacy" class="btn btn-outline-info btn-sm">Read Policy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

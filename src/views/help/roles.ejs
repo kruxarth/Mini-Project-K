@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .role-card { background: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-left: 4px solid; }
+    .role-card.teacher { border-left-color: #667eea; }
+    .role-card.admin { border-left-color: #28a745; }
+    .role-card.parent { border-left-color: #ffc107; }
+    .role-card.student { border-left-color: #17a2b8; }
+    .permissions-table { font-size: 0.9em; }
+    .permission-yes { color: #28a745; }
+    .permission-no { color: #dc3545; }
+    .permission-limited { color: #ffc107; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">User Roles & Access</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <h1 class="mb-4"><i class="fas fa-users-cog me-3 text-primary"></i>User Roles & Access</h1>
+      
+      <p class="lead mb-5">Our attendance management system supports different user roles, each with specific permissions and capabilities designed to meet the needs of educational institutions.</p>
+
+      <!-- Teacher Role -->
+      <div class="role-card teacher">
+        <div class="row align-items-center">
+          <div class="col-md-2 text-center">
+            <i class="fas fa-chalkboard-teacher fa-4x text-primary"></i>
+          </div>
+          <div class="col-md-10">
+            <h2 class="h3 mb-3">Teacher Role</h2>
+            <p class="mb-3">Teachers are the primary users who manage day-to-day attendance activities for their assigned classes.</p>
+            
+            <h5>Key Capabilities:</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>Create and manage classes</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Add and remove students</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Mark daily attendance</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Mark period-wise attendance</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>Generate class reports</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Send parent notifications</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Import students via CSV</li>
+                  <li><i class="fas fa-check text-success me-2"></i>View attendance insights</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="alert alert-info mt-3">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Access Level:</strong> Teachers can only access and modify data for classes they are assigned to teach.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Administrator Role -->
+      <div class="role-card admin">
+        <div class="row align-items-center">
+          <div class="col-md-2 text-center">
+            <i class="fas fa-user-shield fa-4x text-success"></i>
+          </div>
+          <div class="col-md-10">
+            <h2 class="h3 mb-3">Administrator Role</h2>
+            <p class="mb-3">Administrators have full system access and can manage all aspects of the attendance system.</p>
+            
+            <h5>Key Capabilities:</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>Manage all teachers and classes</li>
+                  <li><i class="fas fa-check text-success me-2"></i>View system-wide analytics</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Configure system settings</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Bulk import/export data</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>Generate institution-wide reports</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Manage user accounts</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Configure notification settings</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Access audit logs</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="alert alert-success mt-3">
+              <i class="fas fa-shield-alt me-2"></i>
+              <strong>Access Level:</strong> Full system access with ability to manage all users, classes, and system configurations.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent Role -->
+      <div class="role-card parent">
+        <div class="row align-items-center">
+          <div class="col-md-2 text-center">
+            <i class="fas fa-users fa-4x text-warning"></i>
+          </div>
+          <div class="col-md-10">
+            <h2 class="h3 mb-3">Parent Role</h2>
+            <p class="mb-3">Parents can monitor their child's attendance and receive important notifications.</p>
+            
+            <h5>Key Capabilities:</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>View child's attendance records</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Receive SMS/email notifications</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Download attendance reports</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>View attendance trends</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Update contact information</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Submit absence explanations</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="alert alert-warning mt-3">
+              <i class="fas fa-eye me-2"></i>
+              <strong>Access Level:</strong> Read-only access limited to their own child's attendance data and related information.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Role -->
+      <div class="role-card student">
+        <div class="row align-items-center">
+          <div class="col-md-2 text-center">
+            <i class="fas fa-graduation-cap fa-4x text-info"></i>
+          </div>
+          <div class="col-md-10">
+            <h2 class="h3 mb-3">Student Role</h2>
+            <p class="mb-3">Students can view their own attendance records and track their academic progress.</p>
+            
+            <h5>Key Capabilities:</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>View personal attendance records</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Check attendance percentage</li>
+                  <li><i class="fas fa-check text-success me-2"></i>View class schedules</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>Download personal reports</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Update profile information</li>
+                  <li><i class="fas fa-check text-success me-2"></i>View attendance trends</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="alert alert-info mt-3">
+              <i class="fas fa-user me-2"></i>
+              <strong>Access Level:</strong> Personal data access only - students can view their own attendance records and related information.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions Table -->
+      <div class="mt-5">
+        <h2 class="h3 mb-4">Detailed Permissions Matrix</h2>
+        <div class="table-responsive">
+          <table class="table table-striped permissions-table">
+            <thead class="table-dark">
+              <tr>
+                <th>Feature/Action</th>
+                <th class="text-center">Teacher</th>
+                <th class="text-center">Administrator</th>
+                <th class="text-center">Parent</th>
+                <th class="text-center">Student</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Class Management</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Create Classes</td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>Edit Own Classes</td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>Edit All Classes</td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td><strong>Student Management</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Add Students</td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>Import Students (CSV)</td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td><strong>Attendance</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Mark Attendance</td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>View Own Child's Attendance</td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>View Own Attendance</td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+              </tr>
+              <tr>
+                <td>View All Attendance</td>
+                <td class="text-center permission-limited"><i class="fas fa-exclamation-triangle"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td><strong>Reports</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Generate Class Reports</td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>Generate System Reports</td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>Download Personal Reports</td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+              </tr>
+              <tr>
+                <td><strong>System Administration</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Manage Users</td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>System Settings</td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+              <tr>
+                <td>View Analytics</td>
+                <td class="text-center permission-limited"><i class="fas fa-exclamation-triangle"></i></td>
+                <td class="text-center permission-yes"><i class="fas fa-check"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+                <td class="text-center permission-no"><i class="fas fa-times"></i></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3">
+          <div class="row">
+            <div class="col-md-4">
+              <small><i class="fas fa-check permission-yes me-2"></i>Full Access</small>
+            </div>
+            <div class="col-md-4">
+              <small><i class="fas fa-exclamation-triangle permission-limited me-2"></i>Limited Access</small>
+            </div>
+            <div class="col-md-4">
+              <small><i class="fas fa-times permission-no me-2"></i>No Access</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Notes -->
+      <div class="mt-5">
+        <h2 class="h3 mb-3">Security & Access Control</h2>
+        <div class="alert alert-warning">
+          <h5><i class="fas fa-shield-alt me-2"></i>Important Security Notes</h5>
+          <ul class="mb-0">
+            <li>All user actions are logged for security and audit purposes</li>
+            <li>Users can only access data they have permission to view</li>
+            <li>Session timeouts ensure accounts remain secure</li>
+            <li>Password policies enforce strong authentication</li>
+            <li>Regular security updates protect against vulnerabilities</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

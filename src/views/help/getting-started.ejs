@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .step-card { background: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+    .feature-box { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .screenshot-placeholder { background: #e9ecef; border: 2px dashed #adb5bd; border-radius: 8px; padding: 40px; text-align: center; color: #6c757d; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">Getting Started</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <div class="row">
+        <div class="col-lg-8">
+          <h1 class="mb-4"><i class="fas fa-rocket me-3 text-primary"></i>Getting Started</h1>
+          
+          <!-- System Overview -->
+          <section class="mb-5">
+            <h2 class="h3 mb-3">What is the Attendance Management System?</h2>
+            <p class="lead">Our comprehensive attendance management system helps educational institutions efficiently track, manage, and report student attendance with powerful features designed for teachers, administrators, and parents.</p>
+            
+            <div class="row mt-4">
+              <div class="col-md-4">
+                <div class="feature-box text-center">
+                  <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                  <h5>Easy Attendance Tracking</h5>
+                  <p class="small text-muted">Mark attendance quickly with intuitive interfaces</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-box text-center">
+                  <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                  <h5>Detailed Reports</h5>
+                  <p class="small text-muted">Generate comprehensive attendance reports</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-box text-center">
+                  <i class="fas fa-bell fa-3x text-warning mb-3"></i>
+                  <h5>Parent Notifications</h5>
+                  <p class="small text-muted">Automatic SMS and email alerts to parents</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Who Can Use It -->
+          <section class="mb-5">
+            <h2 class="h3 mb-3">Who Can Use This System?</h2>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="d-flex align-items-start mb-3">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-chalkboard-teacher fa-2x text-primary me-3"></i>
+                  </div>
+                  <div>
+                    <h5>Teachers</h5>
+                    <p class="text-muted">Mark attendance, manage classes, generate reports, and communicate with parents.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="d-flex align-items-start mb-3">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-user-shield fa-2x text-success me-3"></i>
+                  </div>
+                  <div>
+                    <h5>Administrators</h5>
+                    <p class="text-muted">Manage teachers, oversee all classes, access analytics, and configure system settings.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="d-flex align-items-start mb-3">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-users fa-2x text-info me-3"></i>
+                  </div>
+                  <div>
+                    <h5>Parents</h5>
+                    <p class="text-muted">View their child's attendance records and receive notifications about absences.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="d-flex align-items-start mb-3">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-graduation-cap fa-2x text-warning me-3"></i>
+                  </div>
+                  <div>
+                    <h5>Students</h5>
+                    <p class="text-muted">Check their own attendance records and track their academic progress.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- System Requirements -->
+          <section class="mb-5">
+            <h2 class="h3 mb-3">System Requirements</h2>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Good news!</strong> Our system works on any device with a modern web browser.
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <h5><i class="fas fa-desktop me-2"></i>Supported Browsers</h5>
+                <ul class="list-unstyled">
+                  <li><i class="fab fa-chrome me-2 text-warning"></i>Google Chrome (recommended)</li>
+                  <li><i class="fab fa-firefox me-2 text-orange"></i>Mozilla Firefox</li>
+                  <li><i class="fab fa-safari me-2 text-info"></i>Safari</li>
+                  <li><i class="fab fa-edge me-2 text-primary"></i>Microsoft Edge</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h5><i class="fas fa-mobile-alt me-2"></i>Device Compatibility</h5>
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-laptop me-2 text-primary"></i>Desktop computers</li>
+                  <li><i class="fas fa-tablet-alt me-2 text-success"></i>Tablets</li>
+                  <li><i class="fas fa-mobile-alt me-2 text-info"></i>Smartphones</li>
+                  <li><i class="fas fa-tv me-2 text-warning"></i>Smart boards</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- Quick Start Guide -->
+          <section class="mb-5">
+            <h2 class="h3 mb-3">Quick Start Guide</h2>
+            
+            <div class="step-card">
+              <div class="d-flex align-items-start">
+                <div class="flex-shrink-0">
+                  <span class="badge bg-primary rounded-pill me-3" style="font-size: 1.2em;">1</span>
+                </div>
+                <div>
+                  <h5>Log In to Your Account</h5>
+                  <p>Use your provided email and password to access the system. If you don't have credentials, contact your administrator.</p>
+                  <div class="screenshot-placeholder">
+                    <i class="fas fa-image fa-3x mb-2"></i>
+                    <p>Screenshot: Login page</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="d-flex align-items-start">
+                <div class="flex-shrink-0">
+                  <span class="badge bg-primary rounded-pill me-3" style="font-size: 1.2em;">2</span>
+                </div>
+                <div>
+                  <h5>Explore Your Dashboard</h5>
+                  <p>After logging in, you'll see your personalized dashboard with quick stats, recent activity, and easy access to all features.</p>
+                  <ul>
+                    <li>View today's attendance summary</li>
+                    <li>See your classes and student counts</li>
+                    <li>Access quick actions for common tasks</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="d-flex align-items-start">
+                <div class="flex-shrink-0">
+                  <span class="badge bg-primary rounded-pill me-3" style="font-size: 1.2em;">3</span>
+                </div>
+                <div>
+                  <h5>Create Your First Class</h5>
+                  <p>Click on "Create Class" to set up your first class:</p>
+                  <ol>
+                    <li>Enter class name (e.g., "Mathematics 10A")</li>
+                    <li>Add class section if applicable</li>
+                    <li>Set up class schedule and periods</li>
+                    <li>Save your class</li>
+                  </ol>
+                  <a href="/manage/class/new" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-2"></i>Create Class Now
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="d-flex align-items-start">
+                <div class="flex-shrink-0">
+                  <span class="badge bg-primary rounded-pill me-3" style="font-size: 1.2em;">4</span>
+                </div>
+                <div>
+                  <h5>Add Students to Your Class</h5>
+                  <p>You can add students in two ways:</p>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-user-plus me-2"></i>Add Individually</h6>
+                      <p class="small">Add students one by one with their details</p>
+                    </div>
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-upload me-2"></i>Import from CSV</h6>
+                      <p class="small">Upload a CSV file with multiple students</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="d-flex align-items-start">
+                <div class="flex-shrink-0">
+                  <span class="badge bg-success rounded-pill me-3" style="font-size: 1.2em;">5</span>
+                </div>
+                <div>
+                  <h5>Mark Your First Attendance</h5>
+                  <p>Now you're ready to mark attendance:</p>
+                  <ol>
+                    <li>Go to your class from the dashboard</li>
+                    <li>Click "Mark Attendance"</li>
+                    <li>Select Present/Absent/Late/Excused for each student</li>
+                    <li>Save the attendance record</li>
+                  </ol>
+                  <div class="alert alert-success">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Pro Tip:</strong> You can mark all students present with one click and then adjust individual records as needed.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Next Steps -->
+          <section class="mb-5">
+            <h2 class="h3 mb-3">What's Next?</h2>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card border-primary">
+                  <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Generate Reports</h5>
+                    <p class="card-text">Learn how to create detailed attendance reports for analysis and sharing.</p>
+                    <a href="/help/how-to#reports" class="btn btn-outline-primary">Learn More</a>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-success">
+                  <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-bell me-2"></i>Set Up Notifications</h5>
+                    <p class="card-text">Configure automatic notifications to keep parents informed about attendance.</p>
+                    <a href="/help/how-to#notifications" class="btn btn-outline-success">Learn More</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
+            </div>
+            <div class="card-body">
+              <p>If you're stuck or need assistance, we're here to help!</p>
+              <div class="d-grid gap-2">
+                <a href="/help/contact" class="btn btn-outline-primary">Contact Support</a>
+                <a href="/help/faq" class="btn btn-outline-info">Browse FAQs</a>
+                <a href="/help/videos" class="btn btn-outline-success">Watch Videos</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white">
+              <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Tips</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use keyboard shortcuts to speed up attendance marking</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Set up CSV templates for easy student imports</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Enable notifications to keep parents informed</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Regular backups ensure your data is safe</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

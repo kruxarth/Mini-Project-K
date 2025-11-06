@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .shortcut-card { background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #667eea; }
+    .key { background: #e9ecef; border: 1px solid #adb5bd; border-radius: 4px; padding: 4px 8px; font-family: monospace; font-weight: bold; margin: 0 2px; }
+    .key-combo { display: inline-flex; align-items: center; gap: 5px; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">Keyboard Shortcuts</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <h1 class="mb-4"><i class="fas fa-keyboard me-3 text-primary"></i>Keyboard Shortcuts</h1>
+      
+      <p class="lead mb-5">Speed up your workflow with these keyboard shortcuts. Master these combinations to become more efficient with the attendance management system.</p>
+
+      <!-- General Navigation -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-compass me-2 text-success"></i>General Navigation</h2>
+        
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Go to Dashboard</h5>
+              <small class="text-muted">Navigate to the main dashboard from anywhere</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Alt</span> + <span class="key">D</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Open Help Center</h5>
+              <small class="text-muted">Quick access to help and documentation</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Alt</span> + <span class="key">H</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Search Classes</h5>
+              <small class="text-muted">Focus on the class search box</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">K</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Toggle Dark Mode</h5>
+              <small class="text-muted">Switch between light and dark themes</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Alt</span> + <span class="key">T</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Attendance Shortcuts -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-check me-2 text-primary"></i>Attendance Management</h2>
+        
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Mark All Present</h5>
+              <small class="text-muted">Quickly mark all students as present</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">A</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Save Attendance</h5>
+              <small class="text-muted">Save current attendance records</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">S</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Navigate Students</h5>
+              <small class="text-muted">Move between student records</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">↑</span> / <span class="key">↓</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Toggle Present/Absent</h5>
+              <small class="text-muted">Quick toggle for selected student</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Space</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Mark as Present</h5>
+              <small class="text-muted">Mark selected student as present</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">P</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Mark as Absent</h5>
+              <small class="text-muted">Mark selected student as absent</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">A</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Mark as Late</h5>
+              <small class="text-muted">Mark selected student as late</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">L</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Mark as Excused</h5>
+              <small class="text-muted">Mark selected student as excused</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">E</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Class Management -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-chalkboard me-2 text-info"></i>Class Management</h2>
+        
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Create New Class</h5>
+              <small class="text-muted">Open the create class dialog</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">N</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Add New Student</h5>
+              <small class="text-muted">Add a student to current class</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">Shift</span> + <span class="key">N</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Import CSV</h5>
+              <small class="text-muted">Open CSV import dialog</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">I</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reports & Export -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-chart-bar me-2 text-warning"></i>Reports & Export</h2>
+        
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Generate Report</h5>
+              <small class="text-muted">Open report generation page</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">R</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Export Data</h5>
+              <small class="text-muted">Quick export current view</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">E</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Print Report</h5>
+              <small class="text-muted">Print current report or page</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">P</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Form Navigation -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-edit me-2 text-secondary"></i>Form Navigation</h2>
+        
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Next Field</h5>
+              <small class="text-muted">Move to next form field</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Tab</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Previous Field</h5>
+              <small class="text-muted">Move to previous form field</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Shift</span> + <span class="key">Tab</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Submit Form</h5>
+              <small class="text-muted">Submit current form</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">Enter</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Cancel/Close</h5>
+              <small class="text-muted">Cancel form or close dialog</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Esc</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Browser Shortcuts -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-globe me-2 text-danger"></i>Browser Shortcuts</h2>
+        
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Refresh Page</h5>
+              <small class="text-muted">Reload current page</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">F5</span> or <span class="key">Ctrl</span> + <span class="key">R</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Hard Refresh</h5>
+              <small class="text-muted">Reload page ignoring cache</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">F5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Go Back</h5>
+              <small class="text-muted">Navigate to previous page</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Alt</span> + <span class="key">←</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Go Forward</h5>
+              <small class="text-muted">Navigate to next page</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Alt</span> + <span class="key">→</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Zoom In</h5>
+              <small class="text-muted">Increase page zoom</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">+</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">Zoom Out</h5>
+              <small class="text-muted">Decrease page zoom</small>
+            </div>
+            <div class="key-combo">
+              <span class="key">Ctrl</span> + <span class="key">-</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tips and Notes -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card border-success">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Pro Tips</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Practice shortcuts regularly to build muscle memory</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Start with the most common shortcuts first</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use shortcuts during attendance marking for maximum efficiency</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Combine shortcuts with mouse actions for best results</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card border-info">
+            <div class="card-header bg-info text-white">
+              <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Important Notes</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Some shortcuts may vary by browser</li>
+                <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Mac users: Use Cmd instead of Ctrl</li>
+                <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Shortcuts work best in modern browsers</li>
+                <li class="mb-2"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Some shortcuts require focus on specific elements</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customization -->
+      <div class="mt-5">
+        <div class="card bg-light">
+          <div class="card-body text-center">
+            <h3><i class="fas fa-cog me-2 text-primary"></i>Customize Your Experience</h3>
+            <p class="mb-4">Want to suggest new shortcuts or modify existing ones? We're always looking to improve user experience.</p>
+            <a href="/help/contact" class="btn btn-primary">
+              <i class="fas fa-envelope me-2"></i>Send Feedback
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Add keyboard shortcut functionality
+    document.addEventListener('keydown', function(e) {
+      // Alt + D - Go to Dashboard
+      if (e.altKey && e.key === 'd') {
+        e.preventDefault();
+        window.location.href = '/dashboard';
+      }
+      
+      // Alt + H - Open Help Center
+      if (e.altKey && e.key === 'h') {
+        e.preventDefault();
+        window.location.href = '/help';
+      }
+      
+      // Ctrl + K - Focus search (if exists)
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        const searchBox = document.querySelector('input[type="search"], input[placeholder*="search" i]');
+        if (searchBox) {
+          searchBox.focus();
+        }
+      }
+    });
+
+    // Show shortcut demonstration
+    function demonstrateShortcut(shortcut) {
+      // Visual feedback for shortcut demonstration
+      const toast = document.createElement('div');
+      toast.className = 'toast position-fixed top-0 end-0 m-3';
+      toast.innerHTML = `
+        <div class="toast-header">
+          <i class="fas fa-keyboard me-2"></i>
+          <strong class="me-auto">Shortcut Activated</strong>
+        </div>
+        <div class="toast-body">
+          ${shortcut} shortcut demonstrated!
+        </div>
+      `;
+      document.body.appendChild(toast);
+      
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

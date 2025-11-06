@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .problem-card { background: #fff5f5; border-left: 4px solid #dc3545; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .solution-card { background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .warning-card { background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .success-card { background: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">Troubleshooting</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <h1 class="mb-4"><i class="fas fa-tools me-3 text-primary"></i>Troubleshooting Guide</h1>
+      
+      <p class="lead mb-5">Having issues with the attendance management system? Find solutions to common problems and errors below.</p>
+
+      <!-- Quick Diagnostic -->
+      <div class="success-card">
+        <h3><i class="fas fa-stethoscope me-2"></i>Quick System Check</h3>
+        <p>Before diving into specific issues, try these quick fixes:</p>
+        <div class="row">
+          <div class="col-md-6">
+            <ul class="list-unstyled">
+              <li><i class="fas fa-check text-success me-2"></i>Refresh your browser (Ctrl+F5 or Cmd+R)</li>
+              <li><i class="fas fa-check text-success me-2"></i>Clear browser cache and cookies</li>
+              <li><i class="fas fa-check text-success me-2"></i>Check your internet connection</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <ul class="list-unstyled">
+              <li><i class="fas fa-check text-success me-2"></i>Try a different browser</li>
+              <li><i class="fas fa-check text-success me-2"></i>Disable browser extensions temporarily</li>
+              <li><i class="fas fa-check text-success me-2"></i>Ensure JavaScript is enabled</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login Issues -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-sign-in-alt me-2 text-danger"></i>Login Problems</h2>
+        
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: "Login Failed" or "Invalid Credentials"</h4>
+          <p>You're unable to log in and receiving error messages.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ol>
+            <li><strong>Check your credentials:</strong>
+              <ul>
+                <li>Verify your email address is correct</li>
+                <li>Ensure password is typed correctly (check Caps Lock)</li>
+                <li>Try typing password in a text editor first to verify</li>
+              </ul>
+            </li>
+            <li><strong>Reset your password:</strong>
+              <ul>
+                <li>Click "Forgot Password?" on the login page</li>
+                <li>Enter your email and check for reset instructions</li>
+                <li>Check spam/junk folder if email doesn't arrive</li>
+              </ul>
+            </li>
+            <li><strong>Contact administrator:</strong>
+              <ul>
+                <li>Your account might be deactivated</li>
+                <li>You might need a new account created</li>
+                <li>There could be system-wide login issues</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: "Session Expired" Messages</h4>
+          <p>You keep getting logged out or see session expired errors.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ul>
+            <li>Sessions expire after 6 hours of inactivity for security</li>
+            <li>Save your work frequently to avoid data loss</li>
+            <li>Log in again to continue working</li>
+            <li>If sessions expire too quickly, contact your administrator</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Attendance Issues -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-user-check me-2 text-warning"></i>Attendance Problems</h2>
+        
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: Attendance Not Saving</h4>
+          <p>You mark attendance but it doesn't save or disappears after refresh.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ol>
+            <li><strong>Check your connection:</strong>
+              <ul>
+                <li>Ensure stable internet connection</li>
+                <li>Look for "saving..." or "saved" indicators</li>
+                <li>Wait for confirmation before navigating away</li>
+              </ul>
+            </li>
+            <li><strong>Browser issues:</strong>
+              <ul>
+                <li>Disable ad blockers temporarily</li>
+                <li>Clear browser cache</li>
+                <li>Try incognito/private browsing mode</li>
+              </ul>
+            </li>
+            <li><strong>System issues:</strong>
+              <ul>
+                <li>Try marking attendance for fewer students at once</li>
+                <li>Refresh page and try again</li>
+                <li>Contact support if problem persists</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: Students Missing from Attendance List</h4>
+          <p>Some students don't appear when marking attendance.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ul>
+            <li>Check if students are properly enrolled in the class</li>
+            <li>Verify students haven't been accidentally removed</li>
+            <li>Look for students in "Inactive" or "Archived" status</li>
+            <li>Contact administrator to restore missing students</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Data Import Issues -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-upload me-2 text-info"></i>CSV Import Problems</h2>
+        
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: "CSV Format Error"</h4>
+          <p>Your CSV file is rejected with format errors.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <div class="alert alert-info">
+            <strong>Required CSV Format:</strong><br>
+            <code>name,roll_number,email,phone,parent_name,parent_phone,parent_email</code>
+          </div>
+          <ol>
+            <li><strong>Check column headers:</strong>
+              <ul>
+                <li>First row must contain exact column names above</li>
+                <li>No extra spaces or special characters</li>
+                <li>Use lowercase with underscores</li>
+              </ul>
+            </li>
+            <li><strong>Validate data:</strong>
+              <ul>
+                <li>No empty name or roll_number fields</li>
+                <li>No duplicate roll numbers</li>
+                <li>Remove commas from data fields</li>
+                <li>Use proper email format</li>
+              </ul>
+            </li>
+            <li><strong>File format:</strong>
+              <ul>
+                <li>Save as UTF-8 encoded CSV</li>
+                <li>Use comma separators (not semicolons)</li>
+                <li>Remove any extra blank rows</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: "Duplicate Roll Number" Error</h4>
+          <p>Import fails due to duplicate roll numbers.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ul>
+            <li>Check your CSV for duplicate roll numbers</li>
+            <li>Verify existing students don't have same roll numbers</li>
+            <li>Use unique roll numbers for each student in the class</li>
+            <li>Remove or update duplicate entries before importing</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Notification Issues -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-bell me-2 text-success"></i>Notification Problems</h2>
+        
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: SMS Not Sending</h4>
+          <p>Parent notifications via SMS are not being delivered.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ol>
+            <li><strong>Check phone numbers:</strong>
+              <ul>
+                <li>Verify parent phone numbers are correct</li>
+                <li>Include country code (e.g., +1 for US)</li>
+                <li>Remove spaces, dashes, or special characters</li>
+              </ul>
+            </li>
+            <li><strong>System configuration:</strong>
+              <ul>
+                <li>SMS service might not be configured</li>
+                <li>Contact administrator to check Twilio setup</li>
+                <li>Verify SMS credits are available</li>
+              </ul>
+            </li>
+            <li><strong>Carrier issues:</strong>
+              <ul>
+                <li>Some carriers block automated messages</li>
+                <li>Try sending to different phone numbers</li>
+                <li>Check if messages are in spam/blocked folder</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: Email Notifications Not Working</h4>
+          <p>Email notifications to parents are not being sent.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ul>
+            <li>Verify parent email addresses are correct</li>
+            <li>Check spam/junk folders</li>
+            <li>Ensure email service is configured by administrator</li>
+            <li>Try sending test emails to verify system is working</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Performance Issues -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-tachometer-alt me-2 text-secondary"></i>Performance Issues</h2>
+        
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: System Running Slowly</h4>
+          <p>Pages load slowly or system feels unresponsive.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Browser Optimization:</h6>
+              <ul>
+                <li>Close unnecessary browser tabs</li>
+                <li>Clear browser cache and cookies</li>
+                <li>Disable unnecessary extensions</li>
+                <li>Update to latest browser version</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6>System Optimization:</h6>
+              <ul>
+                <li>Check internet connection speed</li>
+                <li>Close other applications using internet</li>
+                <li>Try during off-peak hours</li>
+                <li>Use wired connection instead of WiFi</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="problem-card">
+          <h4><i class="fas fa-exclamation-triangle me-2"></i>Problem: Reports Taking Too Long to Generate</h4>
+          <p>Report generation times out or takes very long.</p>
+        </div>
+        
+        <div class="solution-card">
+          <h5><i class="fas fa-lightbulb me-2"></i>Solutions:</h5>
+          <ul>
+            <li>Reduce date range for large reports</li>
+            <li>Generate reports for smaller class groups</li>
+            <li>Try during off-peak hours</li>
+            <li>Contact administrator if problem persists</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Browser Compatibility -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-globe me-2 text-primary"></i>Browser Compatibility</h2>
+        
+        <div class="warning-card">
+          <h4><i class="fas fa-info-circle me-2"></i>Recommended Browsers</h4>
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Fully Supported:</h6>
+              <ul>
+                <li><i class="fab fa-chrome me-2"></i>Google Chrome (latest)</li>
+                <li><i class="fab fa-firefox me-2"></i>Mozilla Firefox (latest)</li>
+                <li><i class="fab fa-safari me-2"></i>Safari (latest)</li>
+                <li><i class="fab fa-edge me-2"></i>Microsoft Edge (latest)</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6>Limited Support:</h6>
+              <ul>
+                <li><i class="fab fa-internet-explorer me-2"></i>Internet Explorer (not recommended)</li>
+                <li>Older browser versions</li>
+                <li>Mobile browsers (basic functionality)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Emergency Contacts -->
+      <section class="mb-5">
+        <h2 class="h3 mb-4"><i class="fas fa-phone me-2 text-danger"></i>When All Else Fails</h2>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card border-primary">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-headset me-2"></i>Technical Support</h5>
+              </div>
+              <div class="card-body">
+                <p>For technical issues that you can't resolve:</p>
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-envelope me-2"></i>Email: support@gcoea-attendance.com</li>
+                  <li><i class="fas fa-phone me-2"></i>Phone: +91-XXX-XXX-XXXX</li>
+                  <li><i class="fas fa-clock me-2"></i>Hours: Mon-Fri 9AM-6PM</li>
+                </ul>
+                <a href="/help/contact" class="btn btn-primary">Contact Support</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card border-success">
+              <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-user-shield me-2"></i>System Administrator</h5>
+              </div>
+              <div class="card-body">
+                <p>For account and permission issues:</p>
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-user me-2"></i>Contact your school's IT administrator</li>
+                  <li><i class="fas fa-key me-2"></i>Account activation/deactivation</li>
+                  <li><i class="fas fa-users-cog me-2"></i>Role and permission changes</li>
+                </ul>
+                <button class="btn btn-success" onclick="alert('Contact your school administrator')">Find Administrator</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- System Status -->
+      <div class="success-card">
+        <h3><i class="fas fa-heartbeat me-2"></i>System Status</h3>
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <p class="mb-0">All systems are currently operational. If you're experiencing issues, they may be temporary or local to your connection.</p>
+          </div>
+          <div class="col-md-4 text-end">
+            <span class="badge bg-success fs-6">
+              <i class="fas fa-check-circle me-2"></i>System Online
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .guide-card { background: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-left: 4px solid #667eea; }
+    .step-number { background: #667eea; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; }
+    .code-block { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; font-family: 'Courier New', monospace; margin: 10px 0; }
+    .screenshot-placeholder { background: #e9ecef; border: 2px dashed #adb5bd; border-radius: 8px; padding: 30px; text-align: center; color: #6c757d; margin: 15px 0; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">How-To Guides</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <h1 class="mb-4"><i class="fas fa-tasks me-3 text-primary"></i>How-To Guides</h1>
+      
+      <p class="lead mb-5">Step-by-step instructions for common tasks in the attendance management system. Each guide includes detailed steps and helpful tips.</p>
+
+      <!-- Table of Contents -->
+      <div class="card mb-5">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-list me-2"></i>Quick Navigation</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><a href="#add-student" class="text-decoration-none"><i class="fas fa-user-plus me-2"></i>Add a New Student</a></li>
+                <li><a href="#add-class" class="text-decoration-none"><i class="fas fa-chalkboard me-2"></i>Create a New Class</a></li>
+                <li><a href="#import-csv" class="text-decoration-none"><i class="fas fa-upload me-2"></i>Import Students from CSV</a></li>
+                <li><a href="#mark-attendance" class="text-decoration-none"><i class="fas fa-check me-2"></i>Mark Attendance</a></li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><a href="#export-reports" class="text-decoration-none"><i class="fas fa-download me-2"></i>Export Reports</a></li>
+                <li><a href="#send-notifications" class="text-decoration-none"><i class="fas fa-bell me-2"></i>Send Notifications</a></li>
+                <li><a href="#edit-attendance" class="text-decoration-none"><i class="fas fa-edit me-2"></i>Edit Attendance</a></li>
+                <li><a href="#period-attendance" class="text-decoration-none"><i class="fas fa-clock me-2"></i>Period Attendance</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add New Student -->
+      <div id="add-student" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-user-plus me-2 text-success"></i>How to Add a New Student</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Navigate to Class Management</h5>
+            <p>From your dashboard, click on the class where you want to add a student, then select "Add Student" or go to "Manage" → "Students".</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Fill Student Information</h5>
+            <p>Enter the required student details:</p>
+            <ul>
+              <li><strong>Full Name:</strong> Student's complete name</li>
+              <li><strong>Roll Number:</strong> Unique identifier for the student</li>
+              <li><strong>Email:</strong> Student's email address (optional)</li>
+              <li><strong>Phone:</strong> Contact number</li>
+              <li><strong>Parent Contact:</strong> Parent's phone/email for notifications</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Save the Student</h5>
+            <p>Click "Add Student" to save the information. The student will immediately appear in your class roster.</p>
+          </div>
+        </div>
+
+        <div class="alert alert-info">
+          <i class="fas fa-lightbulb me-2"></i>
+          <strong>Pro Tip:</strong> Make sure roll numbers are unique within each class to avoid conflicts.
+        </div>
+      </div>
+
+      <!-- Create New Class -->
+      <div id="add-class" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-chalkboard me-2 text-primary"></i>How to Create a New Class</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Access Class Creation</h5>
+            <p>Click "Create Class" from the dashboard or navigate to "Manage" → "Create New Class".</p>
+            <a href="/manage/class/new" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus me-2"></i>Create Class Now
+            </a>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Enter Class Details</h5>
+            <p>Fill in the class information:</p>
+            <ul>
+              <li><strong>Class Name:</strong> e.g., "Mathematics Grade 10"</li>
+              <li><strong>Section:</strong> e.g., "A", "B", "C" (optional)</li>
+              <li><strong>Subject:</strong> Main subject for the class</li>
+              <li><strong>Academic Year:</strong> Current academic year</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Configure Class Settings</h5>
+            <p>Set up additional options:</p>
+            <ul>
+              <li>Enable/disable automatic notifications</li>
+              <li>Set attendance thresholds for alerts</li>
+              <li>Configure period schedules if needed</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">4</div>
+          <div>
+            <h5>Save and Start Adding Students</h5>
+            <p>Click "Create Class" to save. You'll be redirected to add students to your new class.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import Students from CSV -->
+      <div id="import-csv" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-upload me-2 text-warning"></i>How to Import Students from CSV</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Prepare Your CSV File</h5>
+            <p>Create a CSV file with the following columns (in this exact order):</p>
+            <div class="code-block">
+name,roll_number,email,phone,parent_name,parent_phone,parent_email<br>
+John Doe,001,john@email.com,1234567890,Jane Doe,0987654321,jane@email.com<br>
+Mary Smith,002,mary@email.com,1234567891,Bob Smith,0987654322,bob@email.com
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Access Import Feature</h5>
+            <p>Go to your class and click "Import CSV" or navigate to "Manage" → "Import Students".</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Upload and Validate</h5>
+            <p>Select your CSV file and click "Upload". The system will validate the data and show a preview.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">4</div>
+          <div>
+            <h5>Review and Import</h5>
+            <p>Check the preview for any errors, then click "Import Students" to add them to your class.</p>
+          </div>
+        </div>
+
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Important:</strong> Make sure your CSV file is properly formatted and doesn't contain duplicate roll numbers.
+        </div>
+      </div>
+
+      <!-- Mark Attendance -->
+      <div id="mark-attendance" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-check me-2 text-success"></i>How to Mark Attendance</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Select Your Class</h5>
+            <p>From the dashboard, click on the class for which you want to mark attendance.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Choose Attendance Type</h5>
+            <p>Select between:</p>
+            <ul>
+              <li><strong>Daily Attendance:</strong> Mark once per day</li>
+              <li><strong>Period Attendance:</strong> Mark for specific class periods</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Mark Student Status</h5>
+            <p>For each student, select:</p>
+            <ul>
+              <li><span class="badge bg-success">Present</span> - Student is in class</li>
+              <li><span class="badge bg-danger">Absent</span> - Student is not in class</li>
+              <li><span class="badge bg-warning">Late</span> - Student arrived late</li>
+              <li><span class="badge bg-info">Excused</span> - Authorized absence</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">4</div>
+          <div>
+            <h5>Save Attendance</h5>
+            <p>Click "Save Attendance" to record the data. You can edit it later if needed.</p>
+          </div>
+        </div>
+
+        <div class="alert alert-success">
+          <i class="fas fa-magic me-2"></i>
+          <strong>Quick Tip:</strong> Use "Mark All Present" button to quickly mark everyone present, then adjust individual students as needed.
+        </div>
+      </div>
+
+      <!-- Export Reports -->
+      <div id="export-reports" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-download me-2 text-info"></i>How to Export Reports</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Navigate to Reports</h5>
+            <p>Go to "Reports" from the main menu or click "Reports" on a specific class.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Select Report Type</h5>
+            <p>Choose from available report types:</p>
+            <ul>
+              <li><strong>Class Summary:</strong> Overall attendance statistics</li>
+              <li><strong>Student Detail:</strong> Individual student records</li>
+              <li><strong>Date Range:</strong> Attendance for specific period</li>
+              <li><strong>Low Attendance:</strong> Students below threshold</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Configure Report Parameters</h5>
+            <p>Set your preferences:</p>
+            <ul>
+              <li>Date range (from/to dates)</li>
+              <li>Export format (PDF, Excel, CSV)</li>
+              <li>Include/exclude specific data fields</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">4</div>
+          <div>
+            <h5>Generate and Download</h5>
+            <p>Click "Generate Report" and then "Download" when the report is ready.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Send Notifications -->
+      <div id="send-notifications" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-bell me-2 text-warning"></i>How to Send SMS/Email Notifications</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Access Notification Center</h5>
+            <p>Go to "Weekly Reports" or "Notifications" from the main menu.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Select Recipients</h5>
+            <p>Choose who to notify:</p>
+            <ul>
+              <li>All parents in a class</li>
+              <li>Parents of students with low attendance</li>
+              <li>Specific parents (custom selection)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Choose Notification Type</h5>
+            <p>Select delivery method:</p>
+            <ul>
+              <li><strong>SMS:</strong> Quick text message alerts</li>
+              <li><strong>Email:</strong> Detailed attendance reports</li>
+              <li><strong>Both:</strong> SMS + Email combination</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">4</div>
+          <div>
+            <h5>Customize Message</h5>
+            <p>Edit the notification template or use the default message. Preview before sending.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">5</div>
+          <div>
+            <h5>Send Notifications</h5>
+            <p>Click "Send Notifications" to deliver messages to selected parents.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Attendance -->
+      <div id="edit-attendance" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-edit me-2 text-secondary"></i>How to Edit or Correct Attendance</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Find the Attendance Record</h5>
+            <p>Go to "Reports" → "Class Reports" and select the date you want to edit.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Click Edit Button</h5>
+            <p>Look for the "Edit" or pencil icon next to the attendance record you want to modify.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Make Changes</h5>
+            <p>Update the attendance status for any student as needed. You can change between Present, Absent, Late, or Excused.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">4</div>
+          <div>
+            <h5>Save Changes</h5>
+            <p>Click "Update Attendance" to save your corrections. The system will log this change for audit purposes.</p>
+          </div>
+        </div>
+
+        <div class="alert alert-info">
+          <i class="fas fa-history me-2"></i>
+          <strong>Note:</strong> All attendance changes are logged with timestamps and user information for accountability.
+        </div>
+      </div>
+
+      <!-- Period Attendance -->
+      <div id="period-attendance" class="guide-card">
+        <h2 class="h3 mb-4"><i class="fas fa-clock me-2 text-primary"></i>How to Mark Period-wise Attendance</h2>
+        
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">1</div>
+          <div>
+            <h5>Set Up Class Periods</h5>
+            <p>First, configure your class periods in "Manage" → "Periods". Define period names and times.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">2</div>
+          <div>
+            <h5>Select Period Attendance</h5>
+            <p>From your class, click "Period Attendance" instead of regular attendance.</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">3</div>
+          <div>
+            <h5>Choose the Period</h5>
+            <p>Select which period you're marking attendance for (e.g., Period 1, Period 2, etc.).</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="step-number">4</div>
+          <div>
+            <h5>Mark Attendance</h5>
+            <p>Mark each student's attendance for that specific period and save.</p>
+          </div>
+        </div>
+
+        <div class="alert alert-success">
+          <i class="fas fa-calendar-check me-2"></i>
+          <strong>Benefit:</strong> Period-wise attendance gives you more detailed insights into student attendance patterns throughout the day.
+        </div>
+      </div>
+
+      <!-- Additional Tips -->
+      <div class="mt-5">
+        <h2 class="h3 mb-4">Additional Tips & Best Practices</h2>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card border-success">
+              <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Pro Tips</h5>
+              </div>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Mark attendance at the same time daily for consistency</li>
+                  <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use keyboard shortcuts to speed up the process</li>
+                  <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Regularly backup your attendance data</li>
+                  <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Set up automatic notifications for parents</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-warning">
+              <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Common Mistakes</h5>
+              </div>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Forgetting to save attendance after marking</li>
+                  <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Using duplicate roll numbers for students</li>
+                  <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Not updating parent contact information</li>
+                  <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Ignoring low attendance alerts</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
