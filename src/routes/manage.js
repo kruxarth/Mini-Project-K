@@ -126,8 +126,6 @@ router.post('/class/:id/periods/:pid/edit', requireAuth, async (req, res) => {
   res.redirect(`/class/${classId}/periods/manage`);
 });
 
-export default router;
- 
 // Enhanced Student Management
 router.get('/class/:id/students/manage', requireAuth, async (req, res) => {
   const classId = parseInt(req.params.id, 10);
@@ -318,3 +316,5 @@ router.post('/class/:id/students/:sid/delete', requireAuth, async (req, res) => 
   req.session.flash = { type: 'success', message: 'Student deleted' };
   res.redirect(`/class/${classId}/students/manage`);
 });
+
+export default router;
