@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enhanced Weekly Reports - AttendanceMS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .navbar {
+      background: var(--primary-gradient);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: white !important;
+    }
+
+    .report-header {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+    }
+
+    .report-card {
+      background: white;
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      border-left: 4px solid #667eea;
+    }
+
+    .class-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .info-item {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .info-label {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    .attendance-table {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .table th {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      font-weight: 600;
+      padding: 1rem;
+    }
+
+    .table td {
+      padding: 1rem;
+      vertical-align: middle;
+      border-color: #e9ecef;
+    }
+
+    .attendance-excellent {
+      background-color: #d4edda !important;
+      color: #155724;
+    }
+
+    .attendance-good {
+      background-color: #fff3cd !important;
+      color: #856404;
+    }
+
+    .attendance-poor {
+      background-color: #f8d7da !important;
+      color: #721c24;
+    }
+
+    .attendance-percentage {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .alert-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .alert-low {
+      background: #dc3545;
+      color: white;
+    }
+
+    .alert-warning {
+      background: #ffc107;
+      color: #212529;
+    }
+
+    .alert-good {
+      background: #28a745;
+      color: white;
+    }
+
+    .alerts-section {
+      background: white;
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-left: 4px solid #ffc107;
+    }
+
+    .alert-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 10px;
+      background: #f8f9fa;
+    }
+
+    .alert-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .alert-icon.warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .alert-icon.danger {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .alert-icon.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .btn-action {
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary-action {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+    }
+
+    .btn-primary-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+      color: white;
+    }
+
+    .btn-success-action {
+      background: var(--success-color);
+      color: white;
+      border: none;
+    }
+
+    .btn-warning-action {
+      background: var(--warning-color);
+      color: #212529;
+      border: none;
+    }
+
+    @media (max-width: 768px) {
+      .class-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .btn-action {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>
+        AttendanceMS
+      </a>
+      <div class="ms-auto">
+        <a href="/dashboard" class="btn btn-outline-light">
+          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <div class="report-header">
+    <div class="container">
+      <h1><i class="fas fa-chart-line me-3"></i>Enhanced Weekly Report</h1>
+      <p class="lead">Comprehensive attendance analysis and alerts</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Class Information -->
+    <div class="report-card">
+      <h3><i class="fas fa-info-circle me-2"></i>Class Information</h3>
+      
+      <div class="class-info-grid">
+        <div class="info-item">
+          <div class="info-label">Class Name / ID</div>
+          <div class="info-value">FE-IT-A</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Teacher Name</div>
+          <div class="info-value">Prof. John Doe</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Week Period</div>
+          <div class="info-value">Nov 1-7, 2024</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Total Students</div>
+          <div class="info-value">45</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Academic Year</div>
+          <div class="info-value">2024-2025</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Department</div>
+          <div class="info-value">Information Technology</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student-wise Attendance Table -->
+    <div class="attendance-table">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Total Classes</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Attendance %</th>
+            <th>Alerts/Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="attendance-excellent">
+            <td>1</td>
+            <td><strong>Aarav Sharma</strong></td>
+            <td>5</td>
+            <td>5</td>
+            <td>0</td>
+            <td><span class="attendance-percentage">100%</span></td>
+            <td><span class="alert-badge alert-good">Excellent</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-success">
+                <i class="fas fa-envelope"></i>
+              </button>
+            </td>
+          </tr>
+          <tr class="attendance-good">
+            <td>2</td>
+            <td><strong>Neha Patil</strong></td>
+            <td>5</td>
+            <td>4</td>
+            <td>1</td>
+            <td><span class="attendance-percentage">80%</span></td>
+            <td><span class="alert-badge alert-good">Good</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-envelope"></i>
+              </button>
+            </td>
+          </tr>
+          <tr class="attendance-poor">
+            <td>3</td>
+            <td><strong>Rahul Kumar</strong></td>
+            <td>5</td>
+            <td>3</td>
+            <td>2</td>
+            <td><span class="attendance-percentage">60%</span></td>
+            <td><span class="alert-badge alert-low">Below Threshold</span></td>
+            <td>
+              <button class="btn btn-sm btn-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+              </button>
+            </td>
+          </tr>
+          <tr class="attendance-good">
+            <td>4</td>
+            <td><strong>Priya Singh</strong></td>
+            <td>5</td>
+            <td>4</td>
+            <td>1</td>
+            <td><span class="attendance-percentage">80%</span></td>
+            <td><span class="alert-badge alert-good">Good</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-envelope"></i>
+              </button>
+            </td>
+          </tr>
+          <tr class="attendance-poor">
+            <td>5</td>
+            <td><strong>Amit Verma</strong></td>
+            <td>5</td>
+            <td>2</td>
+            <td>3</td>
+            <td><span class="attendance-percentage">40%</span></td>
+            <td><span class="alert-badge alert-low">Critical</span></td>
+            <td>
+              <button class="btn btn-sm btn-danger">
+                <i class="fas fa-phone"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Alerts & Notifications -->
+    <div class="alerts-section mt-4">
+      <h3><i class="fas fa-bell me-2"></i>Alerts & Notifications</h3>
+      
+      <div class="alert-item">
+        <div class="alert-icon danger">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div>
+          <strong>Low Attendance Warning</strong><br>
+          <small>2 students below 75% threshold - Immediate parent notification required</small>
+        </div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-icon warning">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div>
+          <strong>Parent Notifications Sent</strong><br>
+          <small>Weekly reports sent to 43 parents - 2 email delivery failures</small>
+        </div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-icon success">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+          <strong>Attendance Entry Complete</strong><br>
+          <small>All attendance entries for the week are up to date</small>
+        </div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-icon warning">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div>
+          <strong>Pending Actions</strong><br>
+          <small>Follow-up required for 2 students with critical attendance</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-action btn-primary-action">
+        <i class="fas fa-paper-plane me-2"></i>
+        Send All Weekly Reports
+      </button>
+      
+      <button class="btn btn-action btn-warning-action">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Send Low Attendance Alerts
+      </button>
+      
+      <button class="btn btn-action btn-success-action">
+        <i class="fas fa-download me-2"></i>
+        Export Report (PDF)
+      </button>
+      
+      <button class="btn btn-action btn-primary-action">
+        <i class="fas fa-phone me-2"></i>
+        Contact Critical Cases
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Add interactive functionality
+    document.querySelectorAll('.btn-action').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const action = this.textContent.trim();
+        console.log('Action clicked:', action);
+        
+        // Add loading state
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        this.disabled = true;
+        
+        // Simulate action
+        setTimeout(() => {
+          this.innerHTML = originalText;
+          this.disabled = false;
+          alert(`${action} completed successfully!`);
+        }, 2000);
+      });
+    });
+
+    // Color-code attendance rows
+    document.querySelectorAll('tbody tr').forEach(row => {
+      const attendanceCell = row.querySelector('.attendance-percentage');
+      if (attendanceCell) {
+        const percentage = parseInt(attendanceCell.textContent);
+        
+        if (percentage >= 90) {
+          row.classList.add('attendance-excellent');
+        } else if (percentage >= 75) {
+          row.classList.add('attendance-good');
+        } else {
+          row.classList.add('attendance-poor');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

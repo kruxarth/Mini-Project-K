@@ -36,41 +36,93 @@ async function migrate() {
   await run(`PRAGMA foreign_keys = ON;`);
   
   // Add new columns to existing teachers table if they don't exist
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN phone TEXT`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN address TEXT`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN profile_photo TEXT`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN bio TEXT`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN department TEXT`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN designation TEXT`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN date_of_birth DATE`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN date_joined DATE DEFAULT (date('now'))`);
-  } catch (e) { /* Column already exists */ }
-  
-  try {
-    await run(`ALTER TABLE teachers ADD COLUMN updated_at TEXT DEFAULT (datetime('now'))`);
-  } catch (e) { /* Column already exists */ }
+  const columnsToAdd = [
+    { name: 'phone', type: 'TEXT' },
+    { name: 'address', type: 'TEXT' },
+    { name: 'profile_photo', type: 'TEXT' },
+    { name: 'bio', type: 'TEXT' },
+    { name: 'department', type: 'TEXT' },
+    { name: 'designation', type: 'TEXT' },
+    { name: 'date_of_birth', type: 'DATE' },
+    { name: 'date_joined', type: 'DATE DEFAULT (date(\'now\'))' },
+    { name: 'updated_at', type: 'TEXT DEFAULT (datetime(\'now\'))' },
+    { name: 'email_verified', type: 'INTEGER DEFAULT 1' },
+    { name: 'verification_token', type: 'TEXT' },
+    { name: 'token_expiry', type: 'TEXT' },
+    { name: 'created_at', type: 'TEXT DEFAULT (datetime(\'now\'))' }
+  ];
+
+  for (const column of columnsToAdd) {
+    try {
+      await run(`ALTER TABLE teachers ADD COLUMN ${column.name} ${column.type}`);
+      console.log(`Added column: ${column.name}`);
+    } catch (e) { 
+      // Column already exists, which is fine
+    }
+  }
+
+  // Add new columns to classes table
+  const classColumnsToAdd = [
+    { name: 'department', type: 'TEXT' },
+    { name: 'semester', type: 'TEXT' },
+    { name: 'subject', type: 'TEXT' },
+    { name: 'num_students', type: 'INTEGER' },
+    { name: 'attendance_type', type: 'TEXT DEFAULT "period-wise"' },
+    { name: 'min_attendance', type: 'INTEGER DEFAULT 75' },
+    { name: 'auto_notifications', type: 'INTEGER DEFAULT 1' },
+    { name: 'notification_email', type: 'INTEGER DEFAULT 1' },
+    { name: 'notification_sms', type: 'INTEGER DEFAULT 0' }
+  ];
+
+  for (const column of classColumnsToAdd) {
+    try {
+      await run(`ALTER TABLE classes ADD COLUMN ${column.name} ${column.type}`);
+      console.log(`Added class column: ${column.name}`);
+    } catch (e) { 
+      // Column already exists, which is fine
+    }
+  }
+
+  // Add new columns to students table
+  const studentColumnsToAdd = [
+    { name: 'email', type: 'TEXT' },
+    { name: 'phone', type: 'TEXT' },
+    { name: 'enrollment_status', type: 'TEXT DEFAULT "active"' },
+    { name: 'notes', type: 'TEXT' },
+    { name: 'date_of_birth', type: 'DATE' },
+    { name: 'address', type: 'TEXT' },
+    { name: 'emergency_contact', type: 'TEXT' },
+    { name: 'emergency_phone', type: 'TEXT' },
+    { name: 'academic_year', type: 'TEXT' },
+    { name: 'branch', type: 'TEXT' },
+    { name: 'created_at', type: 'TEXT DEFAULT (datetime(\'now\'))' },
+    { name: 'updated_at', type: 'TEXT DEFAULT (datetime(\'now\'))' }
+  ];
+
+  for (const column of studentColumnsToAdd) {
+    try {
+      await run(`ALTER TABLE students ADD COLUMN ${column.name} ${column.type}`);
+      console.log(`Added student column: ${column.name}`);
+    } catch (e) { 
+      // Column already exists, which is fine
+    }
+  }
+
+  // Add new columns to attendance table
+  const attendanceColumnsToAdd = [
+    { name: 'session_time', type: 'TEXT' },
+    { name: 'marked_at', type: 'TEXT DEFAULT (datetime(\'now\'))' },
+    { name: 'marked_by', type: 'INTEGER' }
+  ];
+
+  for (const column of attendanceColumnsToAdd) {
+    try {
+      await run(`ALTER TABLE attendance ADD COLUMN ${column.name} ${column.type}`);
+      console.log(`Added attendance column: ${column.name}`);
+    } catch (e) { 
+      // Column already exists, which is fine
+    }
+  }
 
   await run(`CREATE TABLE IF NOT EXISTS teachers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +137,11 @@ async function migrate() {
     designation TEXT,
     date_of_birth DATE,
     date_joined DATE DEFAULT (date('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    updated_at TEXT DEFAULT (datetime('now')),
+    email_verified INTEGER DEFAULT 1,
+    verification_token TEXT,
+    token_expiry TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
   );`);
 
 
@@ -118,6 +174,26 @@ async function migrate() {
     name TEXT NOT NULL,
     section TEXT,
     teacher_id INTEGER NOT NULL,
+    department TEXT,
+    semester TEXT,
+    academic_year TEXT,
+    subject TEXT,
+    description TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(name, academic_year),
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
+  );`);
+
+  await run(`CREATE TABLE IF NOT EXISTS subjects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    code TEXT,
+    description TEXT,
+    class_id INTEGER NOT NULL,
+    teacher_id INTEGER NOT NULL,
+    credits INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
     FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
   );`);
 
@@ -125,7 +201,18 @@ async function migrate() {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     roll_no TEXT,
+    email TEXT,
+    phone TEXT,
+    enrollment_status TEXT DEFAULT 'active' CHECK (enrollment_status IN ('active','inactive','graduated','transferred')),
+    notes TEXT,
+    date_of_birth DATE,
+    address TEXT,
+    emergency_contact TEXT,
+    emergency_phone TEXT,
     class_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(roll_no, class_id),
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
   );`);
 
@@ -142,13 +229,17 @@ async function migrate() {
   await run(`CREATE TABLE IF NOT EXISTS attendance (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
+    session_time TEXT,
     class_id INTEGER NOT NULL,
     student_id INTEGER NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('present','absent','late','excused')),
     note TEXT,
-    UNIQUE(date, student_id),
+    marked_at TEXT DEFAULT (datetime('now')),
+    marked_by INTEGER,
+    UNIQUE(date, session_time, student_id),
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (marked_by) REFERENCES teachers(id)
   );`);
 
   await run(`CREATE TABLE IF NOT EXISTS notification_log (

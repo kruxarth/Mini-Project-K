@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/dark-mode.css">
   <style>
     .student-card {
       transition: all 0.3s ease;
@@ -35,6 +36,61 @@
     .status-btn.late.active { background-color: #ffc107; }
     .status-btn.excused { border-color: #17a2b8; color: #17a2b8; }
     .status-btn.excused.active { background-color: #17a2b8; }
+    
+    /* Validation Styles */
+    .validation-error {
+      border: 2px solid #dc3545 !important;
+      animation: shake 0.5s ease-in-out;
+    }
+    
+    .validation-success {
+      border: 2px solid #28a745 !important;
+    }
+    
+    .validation-warning {
+      border: 2px solid #ffc107 !important;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .student-card.missing-attendance {
+      border: 2px solid #ffc107;
+      background-color: #fffdf7;
+    }
+    
+    .student-card.duplicate-warning {
+      border: 2px solid #dc3545;
+      background-color: #fff8f8;
+    }
+    
+    .validation-message {
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      display: none;
+    }
+    
+    .validation-message.error {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    
+    .validation-message.warning {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+    }
+    
+    .validation-message.success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
   </style>
 </head>
 <body>
@@ -77,6 +133,112 @@
       </div>
     </div>
 
+    <!-- Session Selection -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="row align-items-end">
+              <div class="col-md-4">
+                <label class="form-label">
+                  <i class="fas fa-clock me-1"></i>Select Time Session *
+                </label>
+                <select class="form-select" id="sessionSelect" required onchange="handleSessionChange()">
+                  <option value="">Choose a time session...</option>
+                  <% timeSessions.forEach(session => { %>
+                    <option value="<%= session.value %>" <%= selectedSession === session.value ? 'selected' : '' %>>
+                      <%= session.label %> (<%= session.short %>)
+                    </option>
+                  <% }) %>
+                </select>
+                <div class="invalid-feedback" id="sessionError">
+                  Please select a time session before marking attendance.
+                </div>
+              </div>
+              
+              <% if (existingSessions && existingSessions.length > 0) { %>
+              <div class="col-md-4">
+                <label class="form-label">Existing Sessions Today</label>
+                <div class="existing-sessions">
+                  <% existingSessions.forEach(session => { %>
+                    <span class="badge bg-info me-1 mb-1">
+                      <%= session.session_time %> (<%= session.student_count %> students)
+                    </span>
+                  <% }) %>
+                </div>
+              </div>
+              <% } %>
+              
+              <div class="col-md-4 text-end">
+                <div class="validation-status" id="validationStatus">
+                  <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Select session to begin
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Filters -->
+    <% if (studentYears && studentYears.length > 1 || studentBranches && studentBranches.length > 1) { %>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="row align-items-end">
+              <% if (studentYears && studentYears.length > 1) { %>
+              <div class="col-md-3">
+                <label class="form-label">
+                  <i class="fas fa-calendar me-1"></i>Filter by Year
+                </label>
+                <select class="form-select" id="studentYearFilter" onchange="applyStudentFilters()">
+                  <option value="">All Years</option>
+                  <% studentYears.forEach(year => { %>
+                    <option value="<%= year.academic_year %>" <%= selectedYear === year.academic_year ? 'selected' : '' %>>
+                      <%= year.academic_year %>
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+              <% } %>
+              
+              <% if (studentBranches && studentBranches.length > 1) { %>
+              <div class="col-md-3">
+                <label class="form-label">
+                  <i class="fas fa-building me-1"></i>Filter by Branch
+                </label>
+                <select class="form-select" id="studentBranchFilter" onchange="applyStudentFilters()">
+                  <option value="">All Branches</option>
+                  <% studentBranches.forEach(branch => { %>
+                    <option value="<%= branch.branch %>" <%= selectedBranch === branch.branch ? 'selected' : '' %>>
+                      <%= branch.branch %>
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+              <% } %>
+              
+              <div class="col-md-3">
+                <button class="btn btn-outline-secondary" onclick="clearStudentFilters()">
+                  <i class="fas fa-times me-2"></i>Clear Filters
+                </button>
+              </div>
+              
+              <div class="col-md-3 text-end">
+                <small class="text-muted">
+                  Showing <%= students.length %> student<%= students.length !== 1 ? 's' : '' %>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
     <!-- Quick Stats -->
     <div class="row mb-4">
       <div class="col-md-3">
@@ -115,6 +277,8 @@
 
     <!-- Attendance Form -->
     <form id="attendanceForm" method="POST" action="/class/<%= class.id %>/daily-attendance">
+      <!-- Hidden session time field -->
+      <input type="hidden" name="session_time" id="sessionTimeInput" value="<%= selectedSession || '' %>">
       <div class="row">
         <% students.forEach((student, index) => { %>
           <div class="col-lg-6 col-xl-4 mb-4">
@@ -128,6 +292,21 @@
                   </div>
                   <div class="flex-grow-1">
                     <h6 class="mb-1"><%= student.name %></h6>
+                    
+                    <!-- Year and Branch Info -->
+                    <div class="mb-1">
+                      <% if (student.student_year) { %>
+                        <span class="badge bg-info me-1">
+                          <i class="fas fa-calendar me-1"></i><%= student.student_year %>
+                        </span>
+                      <% } %>
+                      <% if (student.student_branch) { %>
+                        <span class="badge bg-secondary">
+                          <i class="fas fa-building me-1"></i><%= student.student_branch %>
+                        </span>
+                      <% } %>
+                    </div>
+                    
                     <% if (student.parent_name) { %>
                       <small class="text-muted">
                         <i class="fas fa-user me-1"></i><%= student.parent_name %>
@@ -204,6 +383,15 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function setStatus(studentId, status) {
+      // Validate session is selected first
+      const sessionTime = document.getElementById('sessionTimeInput').value;
+      if (!sessionTime) {
+        showValidationMessage('Please select a time session before marking attendance.', 'warning');
+        document.getElementById('sessionSelect').classList.add('validation-error');
+        document.getElementById('sessionSelect').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      
       // Update hidden input
       document.getElementById(`status-${studentId}`).value = status;
       
@@ -222,23 +410,45 @@
       
       // Update card styling
       card.className = `card student-card ${status}`;
+      card.classList.remove('missing-attendance', 'validation-error');
       
-      // Update counters
+      // Update counters and validation
       updateCounters();
+      validateForm();
     }
 
     function markAllPresent() {
-      if (confirm('Mark all students as present?')) {
+      const sessionTime = document.getElementById('sessionTimeInput').value;
+      if (!sessionTime) {
+        showValidationMessage('Please select a time session before marking attendance.', 'warning');
+        document.getElementById('sessionSelect').classList.add('validation-error');
+        return;
+      }
+      
+      if (confirm('Mark all visible students as present for the selected session?')) {
         const students = document.querySelectorAll('[data-student-id]');
         students.forEach(card => {
           const studentId = card.getAttribute('data-student-id');
-          setStatus(studentId, 'present');
+          // Don't use setStatus to avoid repeated validation
+          document.getElementById(`status-${studentId}`).value = 'present';
+          
+          const buttons = card.querySelectorAll('.status-btn');
+          buttons.forEach(btn => btn.classList.remove('active'));
+          
+          const presentBtn = card.querySelector('.status-btn.present');
+          if (presentBtn) presentBtn.classList.add('active');
+          
+          card.className = 'card student-card present';
+          card.classList.remove('missing-attendance', 'validation-error');
         });
+        updateCounters();
+        validateForm();
+        showValidationMessage(`All ${students.length} students marked as present.`, 'success');
       }
     }
 
     function clearAll() {
-      if (confirm('Clear all attendance selections?')) {
+      if (confirm('Clear all attendance selections? This will remove all marked attendance for the current session.')) {
         const students = document.querySelectorAll('[data-student-id]');
         students.forEach(card => {
           const studentId = card.getAttribute('data-student-id');
@@ -248,8 +458,11 @@
           buttons.forEach(btn => btn.classList.remove('active'));
           
           card.className = 'card student-card';
+          card.classList.remove('missing-attendance', 'validation-error');
         });
         updateCounters();
+        validateForm();
+        hideValidationMessage();
       }
     }
 
@@ -262,37 +475,250 @@
       });
     }
 
-    // Initialize counters on page load
+    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-      updateCounters();
+      // Set initial session if provided
+      const sessionSelect = document.getElementById('sessionSelect');
+      if (sessionSelect.value) {
+        handleSessionChange();
+      }
       
       // Set initial card states based on existing status
       <% students.forEach(student => { %>
         <% if (student.status) { %>
           const card<%= student.id %> = document.getElementById('student-<%= student.id %>');
           card<%= student.id %>.className = 'card student-card <%= student.status %>';
+          
+          // Show session info if attendance exists
+          <% if (student.session_time) { %>
+            const sessionInfo = document.createElement('small');
+            sessionInfo.className = 'text-muted d-block';
+            sessionInfo.innerHTML = '<i class="fas fa-clock me-1"></i>Session: <%= student.session_time %>';
+            card<%= student.id %>.querySelector('.card-body').appendChild(sessionInfo);
+          <% } %>
         <% } %>
       <% }) %>
       
       updateCounters();
+      validateForm();
+      
+      // Add real-time validation
+      document.getElementById('sessionSelect').addEventListener('change', handleSessionChange);
+      
+      // Validate on any attendance change
+      document.querySelectorAll('.status-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setTimeout(validateForm, 100);
+        });
+      });
     });
 
-    // Form validation
-    document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+    // Session handling
+    function handleSessionChange() {
+      const sessionSelect = document.getElementById('sessionSelect');
+      const sessionTimeInput = document.getElementById('sessionTimeInput');
+      const validationStatus = document.getElementById('validationStatus');
+      
+      if (sessionSelect.value) {
+        sessionTimeInput.value = sessionSelect.value;
+        sessionSelect.classList.remove('is-invalid');
+        sessionSelect.classList.add('is-valid');
+        
+        // Check for existing attendance in this session
+        checkExistingAttendance(sessionSelect.value);
+        
+        validationStatus.innerHTML = `
+          <small class="text-success">
+            <i class="fas fa-check-circle me-1"></i>Session selected: ${sessionSelect.options[sessionSelect.selectedIndex].text}
+          </small>
+        `;
+      } else {
+        sessionTimeInput.value = '';
+        sessionSelect.classList.remove('is-valid');
+        validationStatus.innerHTML = `
+          <small class="text-muted">
+            <i class="fas fa-info-circle me-1"></i>Select session to begin
+          </small>
+        `;
+      }
+      
+      validateForm();
+    }
+
+    function checkExistingAttendance(sessionTime) {
+      // Check if any students already have attendance for this session
+      const existingSessions = <%= JSON.stringify(existingSessions || []) %>;
+      const existing = existingSessions.find(s => s.session_time === sessionTime);
+      
+      if (existing) {
+        showValidationMessage(
+          `Warning: ${existing.student_count} students already have attendance marked for this session. New entries will be added separately.`,
+          'warning'
+        );
+      } else {
+        hideValidationMessage();
+      }
+    }
+
+    // Student filtering functions
+    function applyStudentFilters() {
+      const year = document.getElementById('studentYearFilter') ? document.getElementById('studentYearFilter').value : '';
+      const branch = document.getElementById('studentBranchFilter') ? document.getElementById('studentBranchFilter').value : '';
+      const session = document.getElementById('sessionSelect').value;
+      
+      const params = new URLSearchParams();
+      if (year) params.set('year', year);
+      if (branch) params.set('branch', branch);
+      if (session) params.set('session', session);
+      
+      const url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+      window.location.href = url;
+    }
+
+    function clearStudentFilters() {
+      const session = document.getElementById('sessionSelect').value;
+      const url = window.location.pathname + (session ? `?session=${session}` : '');
+      window.location.href = url;
+    }
+
+    // Validation functions
+    function validateForm() {
+      const sessionTime = document.getElementById('sessionTimeInput').value;
       const attendanceInputs = document.querySelectorAll('input[name^="attendance"]');
       let hasAttendance = false;
+      let attendanceCount = 0;
       
       attendanceInputs.forEach(input => {
         if (input.value) {
           hasAttendance = true;
+          attendanceCount++;
         }
       });
       
-      if (!hasAttendance) {
-        e.preventDefault();
-        alert('Please mark attendance for at least one student.');
+      // Update validation status
+      const validationStatus = document.getElementById('validationStatus');
+      
+      if (!sessionTime) {
+        validationStatus.innerHTML = `
+          <small class="text-danger">
+            <i class="fas fa-exclamation-triangle me-1"></i>Session required
+          </small>
+        `;
         return false;
       }
+      
+      if (!hasAttendance) {
+        validationStatus.innerHTML = `
+          <small class="text-warning">
+            <i class="fas fa-clock me-1"></i>Mark attendance for students
+          </small>
+        `;
+        return false;
+      }
+      
+      validationStatus.innerHTML = `
+        <small class="text-success">
+          <i class="fas fa-check-circle me-1"></i>Ready to submit (${attendanceCount} students)
+        </small>
+      `;
+      
+      return true;
+    }
+
+    function showValidationMessage(message, type) {
+      let messageDiv = document.getElementById('validationMessage');
+      if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'validationMessage';
+        messageDiv.className = 'validation-message';
+        document.querySelector('.container-fluid').insertBefore(messageDiv, document.querySelector('.row').nextSibling);
+      }
+      
+      messageDiv.className = `validation-message ${type}`;
+      messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'check-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close float-end" onclick="hideValidationMessage()"></button>
+      `;
+      messageDiv.style.display = 'block';
+    }
+
+    function hideValidationMessage() {
+      const messageDiv = document.getElementById('validationMessage');
+      if (messageDiv) {
+        messageDiv.style.display = 'none';
+      }
+    }
+
+    // Enhanced form validation
+    document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const sessionTime = document.getElementById('sessionTimeInput').value;
+      const attendanceInputs = document.querySelectorAll('input[name^="attendance"]');
+      let hasAttendance = false;
+      let attendanceData = {};
+      
+      // Validate session time
+      if (!sessionTime) {
+        document.getElementById('sessionSelect').classList.add('is-invalid');
+        showValidationMessage('Please select a time session before submitting attendance.', 'error');
+        document.getElementById('sessionSelect').scrollIntoView({ behavior: 'smooth' });
+        return false;
+      }
+      
+      // Collect attendance data
+      attendanceInputs.forEach(input => {
+        if (input.value) {
+          hasAttendance = true;
+          attendanceData[input.name.match(/\[(\d+)\]/)[1]] = input.value;
+        }
+      });
+      
+      // Validate attendance marked
+      if (!hasAttendance) {
+        showValidationMessage('Please mark attendance for at least one student before submitting.', 'error');
+        return false;
+      }
+      
+      // Show loading state
+      const submitBtn = document.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving Attendance...';
+      
+      // Prepare form data
+      const formData = new FormData(this);
+      
+      // Submit via AJAX for better error handling
+      fetch(this.action, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showValidationMessage(data.message, 'success');
+          setTimeout(() => {
+            window.location.href = '/daily-attendance';
+          }, 2000);
+        } else {
+          throw new Error(data.error || 'Unknown error occurred');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showValidationMessage(error.message || 'Error saving attendance. Please try again.', 'error');
+        
+        // Restore submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        
+        // Highlight problematic fields
+        if (error.message.includes('session')) {
+          document.getElementById('sessionSelect').classList.add('validation-error');
+        }
+      });
     });
   </script>
 </body>

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AttendanceMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+        }
+
+        body {
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .register-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .register-header h2 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .register-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+
+        .register-body {
+            padding: 2rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-register {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .password-requirements {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin: 0.25rem 0;
+        }
+
+        .requirement i {
+            margin-right: 0.5rem;
+            width: 16px;
+        }
+
+        .requirement.valid {
+            color: var(--success-color);
+        }
+
+        .requirement.invalid {
+            color: var(--danger-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .registration-step {
+            min-height: 400px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+            color: #6c757d;
+        }
+
+        .step.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .step.completed {
+            color: #28a745;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+            font-weight: 600;
+        }
+
+        .step.active .step-number {
+            background: #667eea;
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+
+        .image-preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 5px;
+        }
+
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+        }
+
+        @media (max-width: 576px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .register-container {
+                margin: 1rem;
+                border-radius: 15px;
+            }
+            
+            .register-header {
+                padding: 1.5rem;
+            }
+            
+            .register-body {
+                padding: 1.5rem;
+            }
+
+            .step {
+                margin: 0 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            .step-number {
+                width: 25px;
+                height: 25px;
+                font-size: 0.75rem;
+            }
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="register-container">
+                    <div class="register-header">
+                        <h2><i class="fas fa-graduation-cap me-2"></i>Join AttendanceMS</h2>
+                        <p>Create your teacher account to get started</p>
+                    </div>
+                    
+                    <div class="register-body">
+                        <!-- Step Indicator -->
+                        <div class="step-indicator">
+                            <div class="step active" id="stepIndicator1">
+                                <div class="step-number">1</div>
+                                <span>Basic Info</span>
+                            </div>
+                            <div class="step" id="stepIndicator2">
+                                <div class="step-number">2</div>
+                                <span>Professional</span>
+                            </div>
+                            <div class="step" id="stepIndicator3">
+                                <div class="step-number">3</div>
+                                <span>Security</span>
+                            </div>
+                        </div>
+
+                        <% if (error) { %>
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <%= error %>
+                            </div>
+                        <% } %>
+                        
+                        <% if (success) { %>
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <%= success %>
+                            </div>
+                        <% } %>
+
+                        <form method="POST" action="/register" id="registerForm" enctype="multipart/form-data">
+                            <!-- Step 1: Basic Information -->
+                            <div class="registration-step" id="step1">
+                                <h5 class="mb-3"><i class="fas fa-user-circle me-2"></i>Basic Information</h5>
+                                
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="name" name="name" 
+                                           placeholder="Full Name" required minlength="2"
+                                           value="<%= formData.name || '' %>">
+                                    <label for="name"><i class="fas fa-user me-2"></i>Full Name</label>
+                                </div>
+
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="Email Address" required
+                                           value="<%= formData.email || '' %>">
+                                    <label for="email"><i class="fas fa-envelope me-2"></i>Email Address</label>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-floating">
+                                        <input type="tel" class="form-control" id="phone" name="phone" 
+                                               placeholder="Phone Number" 
+                                               value="<%= formData.phone || '' %>">
+                                        <label for="phone"><i class="fas fa-phone me-2"></i>Phone Number</label>
+                                    </div>
+
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
+                                               value="<%= formData.dateOfBirth || '' %>">
+                                        <label for="dateOfBirth"><i class="fas fa-calendar me-2"></i>Date of Birth</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="address" name="address" 
+                                              placeholder="Address" style="height: 80px;"><%= formData.address || '' %></textarea>
+                                    <label for="address"><i class="fas fa-map-marker-alt me-2"></i>Address</label>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                                        Next <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Professional Information -->
+                            <div class="registration-step d-none" id="step2">
+                                <h5 class="mb-3"><i class="fas fa-briefcase me-2"></i>Professional Information</h5>
+                                
+                                <div class="form-row">
+                                    <div class="form-floating">
+                                        <select class="form-control" id="department" name="department" required>
+                                            <option value="">Select Department</option>
+                                            <option value="Mathematics" <%= formData.department === 'Mathematics' ? 'selected' : '' %>>Mathematics</option>
+                                            <option value="Science" <%= formData.department === 'Science' ? 'selected' : '' %>>Science</option>
+                                            <option value="English" <%= formData.department === 'English' ? 'selected' : '' %>>English</option>
+                                            <option value="Social Studies" <%= formData.department === 'Social Studies' ? 'selected' : '' %>>Social Studies</option>
+                                            <option value="Computer Science" <%= formData.department === 'Computer Science' ? 'selected' : '' %>>Computer Science</option>
+                                            <option value="Physical Education" <%= formData.department === 'Physical Education' ? 'selected' : '' %>>Physical Education</option>
+                                            <option value="Arts" <%= formData.department === 'Arts' ? 'selected' : '' %>>Arts</option>
+                                            <option value="Music" <%= formData.department === 'Music' ? 'selected' : '' %>>Music</option>
+                                            <option value="Other" <%= formData.department === 'Other' ? 'selected' : '' %>>Other</option>
+                                        </select>
+                                        <label for="department"><i class="fas fa-building me-2"></i>Department</label>
+                                    </div>
+
+                                    <div class="form-floating">
+                                        <select class="form-control" id="designation" name="designation" required>
+                                            <option value="">Select Designation</option>
+                                            <option value="Teacher" <%= formData.designation === 'Teacher' ? 'selected' : '' %>>Teacher</option>
+                                            <option value="Senior Teacher" <%= formData.designation === 'Senior Teacher' ? 'selected' : '' %>>Senior Teacher</option>
+                                            <option value="Head of Department" <%= formData.designation === 'Head of Department' ? 'selected' : '' %>>Head of Department</option>
+                                            <option value="Assistant Principal" <%= formData.designation === 'Assistant Principal' ? 'selected' : '' %>>Assistant Principal</option>
+                                            <option value="Principal" <%= formData.designation === 'Principal' ? 'selected' : '' %>>Principal</option>
+                                            <option value="Substitute Teacher" <%= formData.designation === 'Substitute Teacher' ? 'selected' : '' %>>Substitute Teacher</option>
+                                        </select>
+                                        <label for="designation"><i class="fas fa-id-badge me-2"></i>Designation</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="employeeId" name="employeeId" 
+                                           placeholder="Employee ID" 
+                                           value="<%= formData.employeeId || '' %>">
+                                    <label for="employeeId"><i class="fas fa-id-card me-2"></i>Employee ID (Optional)</label>
+                                </div>
+
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="bio" name="bio" 
+                                              placeholder="Brief bio about yourself" style="height: 100px;"><%= formData.bio || '' %></textarea>
+                                    <label for="bio"><i class="fas fa-info-circle me-2"></i>Bio (Optional)</label>
+                                </div>
+
+                                <!-- Profile Photo Upload -->
+                                <div class="mb-3">
+                                    <label for="profilePhoto" class="form-label">
+                                        <i class="fas fa-camera me-2"></i>Profile Photo (Optional)
+                                    </label>
+                                    <input type="file" class="form-control" id="profilePhoto" name="profilePhoto" 
+                                           accept="image/*" onchange="previewImage(this)">
+                                    <div class="form-text">Upload a professional photo (JPG, PNG, max 5MB)</div>
+                                    <div id="imagePreview" class="mt-2"></div>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="prevStep(1)">
+                                        <i class="fas fa-arrow-left me-2"></i>Previous
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="nextStep(3)">
+                                        Next <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Security -->
+                            <div class="registration-step d-none" id="step3">
+                                <h5 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Account Security</h5>
+
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Password" required minlength="6">
+                                    <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+                                </div>
+
+                                <div class="password-requirements" id="passwordRequirements">
+                                    <div class="requirement" id="lengthReq">
+                                        <i class="fas fa-times"></i>
+                                        At least 6 characters
+                                    </div>
+                                    <div class="requirement" id="letterReq">
+                                        <i class="fas fa-times"></i>
+                                        Contains letters
+                                    </div>
+                                    <div class="requirement" id="numberReq">
+                                        <i class="fas fa-times"></i>
+                                        Contains numbers
+                                    </div>
+                                </div>
+
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                                           placeholder="Confirm Password" required>
+                                    <label for="confirmPassword"><i class="fas fa-lock me-2"></i>Confirm Password</label>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+                                    </label>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)">
+                                        <i class="fas fa-arrow-left me-2"></i>Previous
+                                    </button>
+                                    <button type="submit" class="btn btn-success btn-register" id="submitBtn">
+                                        <span class="loading spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <i class="fas fa-user-plus me-2"></i>
+                                        Create Account
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="login-link">
+                            <p>Already have an account? <a href="/login">Sign in here</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms of Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Acceptance of Terms</h6>
+                    <p>By using AttendanceMS, you agree to these terms and conditions.</p>
+                    
+                    <h6>2. User Responsibilities</h6>
+                    <p>You are responsible for maintaining the confidentiality of your account and password.</p>
+                    
+                    <h6>3. Data Usage</h6>
+                    <p>We collect and use data solely for attendance management purposes.</p>
+                    
+                    <h6>4. Service Availability</h6>
+                    <p>We strive to maintain 99.9% uptime but cannot guarantee uninterrupted service.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Privacy Policy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Information We Collect</h6>
+                    <p>We collect name, email, and attendance data necessary for the service.</p>
+                    
+                    <h6>How We Use Information</h6>
+                    <p>Data is used solely for attendance tracking and reporting purposes.</p>
+                    
+                    <h6>Data Security</h6>
+                    <p>We implement industry-standard security measures to protect your data.</p>
+                    
+                    <h6>Data Sharing</h6>
+                    <p>We do not share personal data with third parties without consent.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Password validation
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const lengthReq = document.getElementById('lengthReq');
+        const letterReq = document.getElementById('letterReq');
+        const numberReq = document.getElementById('numberReq');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = submitBtn.querySelector('.loading');
+
+        password.addEventListener('input', validatePassword);
+        confirmPassword.addEventListener('input', validatePasswordMatch);
+
+        function validatePassword() {
+            const value = password.value;
+            
+            // Length requirement
+            if (value.length >= 6) {
+                lengthReq.classList.add('valid');
+                lengthReq.classList.remove('invalid');
+                lengthReq.querySelector('i').className = 'fas fa-check';
+            } else {
+                lengthReq.classList.add('invalid');
+                lengthReq.classList.remove('valid');
+                lengthReq.querySelector('i').className = 'fas fa-times';
+            }
+            
+            // Letter requirement
+            if (/[a-zA-Z]/.test(value)) {
+                letterReq.classList.add('valid');
+                letterReq.classList.remove('invalid');
+                letterReq.querySelector('i').className = 'fas fa-check';
+            } else {
+                letterReq.classList.add('invalid');
+                letterReq.classList.remove('valid');
+                letterReq.querySelector('i').className = 'fas fa-times';
+            }
+            
+            // Number requirement
+            if (/[0-9]/.test(value)) {
+                numberReq.classList.add('valid');
+                numberReq.classList.remove('invalid');
+                numberReq.querySelector('i').className = 'fas fa-check';
+            } else {
+                numberReq.classList.add('invalid');
+                numberReq.classList.remove('valid');
+                numberReq.querySelector('i').className = 'fas fa-times';
+            }
+            
+            validatePasswordMatch();
+        }
+
+        function validatePasswordMatch() {
+            if (confirmPassword.value && password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Passwords do not match');
+            } else {
+                confirmPassword.setCustomValidity('');
+            }
+        }
+
+        // Form submission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+        });
+
+        // Step navigation functions
+        function nextStep(step) {
+            // Validate current step
+            const currentStep = document.querySelector('.registration-step:not(.d-none)');
+            const inputs = currentStep.querySelectorAll('input[required], select[required]');
+            let valid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!valid) {
+                alert('Please fill in all required fields before proceeding.');
+                return;
+            }
+            
+            // Hide current step
+            currentStep.classList.add('d-none');
+            
+            // Show next step
+            document.getElementById(`step${step}`).classList.remove('d-none');
+            
+            // Update step indicators
+            updateStepIndicators(step);
+        }
+        
+        function prevStep(step) {
+            // Hide current step
+            document.querySelector('.registration-step:not(.d-none)').classList.add('d-none');
+            
+            // Show previous step
+            document.getElementById(`step${step}`).classList.remove('d-none');
+            
+            // Update step indicators
+            updateStepIndicators(step);
+        }
+        
+        function updateStepIndicators(activeStep) {
+            for (let i = 1; i <= 3; i++) {
+                const indicator = document.getElementById(`stepIndicator${i}`);
+                indicator.classList.remove('active', 'completed');
+                
+                if (i === activeStep) {
+                    indicator.classList.add('active');
+                } else if (i < activeStep) {
+                    indicator.classList.add('completed');
+                }
+            }
+        }
+        
+        // Image preview function
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Check file size (5MB limit)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'image-preview';
+                    img.alt = 'Profile Preview';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Auto-hide success message after 5 seconds
+        const successAlert = document.querySelector('.alert-success');
+        if (successAlert) {
+            setTimeout(() => {
+                successAlert.style.opacity = '0';
+                setTimeout(() => {
+                    successAlert.remove();
+                }, 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Enhanced Registration System Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            background: var(--primary-gradient);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem 0;
+        }
+
+        .demo-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin: 1rem;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .demo-header h1 {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .test-button {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .test-button.success {
+            background: var(--success-color);
+        }
+
+        .test-button.info {
+            background: var(--info-color);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-online {
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        .status-offline {
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .demo-steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .demo-steps ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .demo-steps li {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        .server-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .demo-container {
+                margin: 0.5rem;
+                padding: 1.5rem;
+            }
+            
+            .demo-header h1 {
+                font-size: 2rem;
+            }
+            
+            .server-status {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="server-status">
+        <div id="serverStatus">
+            <span class="status-indicator status-offline"></span>
+            Checking server...
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="demo-container">
+            <div class="demo-header">
+                <h1><i class="fas fa-graduation-cap me-3"></i>Enhanced Registration System</h1>
+                <p class="lead">Complete profile collection during registration - No duplicate work needed!</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-list-ol me-2"></i>Multi-Step Registration</h4>
+                        <ul>
+                            <li><strong>Step 1:</strong> Basic Information (Name, Email, Phone, DOB, Address)</li>
+                            <li><strong>Step 2:</strong> Professional Details (Department, Designation, Bio, Photo)</li>
+                            <li><strong>Step 3:</strong> Account Security (Password, Terms)</li>
+                        </ul>
+                        <p class="text-muted">Guided step-by-step process with validation at each step.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-shield-alt me-2"></i>Advanced Features</h4>
+                        <ul>
+                            <li><strong>Real-time Validation:</strong> Instant feedback on all fields</li>
+                            <li><strong>Profile Photo Upload:</strong> Image preview and validation</li>
+                            <li><strong>Email Verification:</strong> Optional verification system</li>
+                            <li><strong>Complete Profile:</strong> No need to fill profile again</li>
+                        </ul>
+                        <p class="text-muted">Professional onboarding experience for new users.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h4><i class="fas fa-rocket me-2"></i>Quick Test Links</h4>
+                <div class="text-center">
+                    <a href="http://localhost:3000/register" target="_blank" class="test-button">
+                        <i class="fas fa-user-plus me-2"></i>Test Registration
+                    </a>
+                    <a href="http://localhost:3000/login" target="_blank" class="test-button success">
+                        <i class="fas fa-sign-in-alt me-2"></i>Test Login
+                    </a>
+                    <a href="http://localhost:3000/dashboard" target="_blank" class="test-button info">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div class="demo-steps">
+                <h4><i class="fas fa-clipboard-check me-2"></i>Demo Test Scenario</h4>
+                <ol>
+                    <li>Click <span class="highlight">"Test Registration"</span> above</li>
+                    <li><strong>Step 1 - Basic Info:</strong>
+                        <ul>
+                            <li>Name: <code>Demo Teacher</code></li>
+                            <li>Email: <code>demo@school.com</code></li>
+                            <li>Phone: <code>+1234567890</code></li>
+                            <li>Date of Birth: <code>1985-06-15</code></li>
+                            <li>Address: <code>123 School Street, Education City</code></li>
+                        </ul>
+                    </li>
+                    <li><strong>Step 2 - Professional:</strong>
+                        <ul>
+                            <li>Department: <code>Mathematics</code></li>
+                            <li>Designation: <code>Senior Teacher</code></li>
+                            <li>Employee ID: <code>MATH001</code></li>
+                            <li>Bio: <code>Experienced mathematics teacher with 10+ years</code></li>
+                            <li>Profile Photo: Upload any image (optional)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Step 3 - Security:</strong>
+                        <ul>
+                            <li>Password: <code>demo123</code></li>
+                            <li>Confirm Password: <code>demo123</code></li>
+                            <li>✅ Accept Terms & Conditions</li>
+                        </ul>
+                    </li>
+                    <li>Submit and verify success message</li>
+                    <li>Login with new credentials: <code>demo@school.com</code> / <code>demo123</code></li>
+                    <li>Check profile page - all information should be pre-filled!</li>
+                </ol>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-check-circle me-2"></i>Expected Results</h4>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Smooth step navigation</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Real-time field validation</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Profile photo upload works</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Complete profile created</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Immediate login access</li>
+                            <li><i class="fas fa-check text-success me-2"></i>No duplicate profile filling</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-database me-2"></i>Profile Fields Collected</h4>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Basic Info:</small>
+                                <ul class="small">
+                                    <li>Full Name</li>
+                                    <li>Email Address</li>
+                                    <li>Phone Number</li>
+                                    <li>Date of Birth</li>
+                                    <li>Address</li>
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Professional:</small>
+                                <ul class="small">
+                                    <li>Department</li>
+                                    <li>Designation</li>
+                                    <li>Employee ID</li>
+                                    <li>Bio</li>
+                                    <li>Profile Photo</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card text-center">
+                <h4><i class="fas fa-star me-2"></i>Key Benefits</h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                        <h6>Time Saving</h6>
+                        <small class="text-muted">One-time profile setup during registration</small>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                        <h6>Complete Profiles</h6>
+                        <small class="text-muted">All necessary information collected upfront</small>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="fas fa-mobile-alt fa-2x text-info mb-2"></i>
+                        <h6>Mobile Friendly</h6>
+                        <small class="text-muted">Responsive design works on all devices</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i>
+                    The enhanced registration system is now ready for deployment!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Server status checker
+        function checkServerStatus() {
+            const statusElement = document.getElementById('serverStatus');
+            const indicator = statusElement.querySelector('.status-indicator');
+            
+            fetch('http://localhost:3000/health')
+                .then(response => {
+                    if (response.ok) {
+                        indicator.className = 'status-indicator status-online';
+                        statusElement.innerHTML = '<span class="status-indicator status-online"></span>Server Online - Ready to Test!';
+                    } else {
+                        throw new Error('Server error');
+                    }
+                })
+                .catch(() => {
+                    indicator.className = 'status-indicator status-offline';
+                    statusElement.innerHTML = '<span class="status-indicator status-offline"></span>Server Offline - Start with "npm start"';
+                });
+        }
+
+        // Check status immediately and then every 5 seconds
+        checkServerStatus();
+        setInterval(checkServerStatus, 5000);
+
+        // Add click tracking for demo purposes
+        document.querySelectorAll('.test-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                console.log('Testing:', this.textContent.trim());
+            });
+        });
+    </script>
+</body>
+</html>
+</content>

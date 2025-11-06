@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - AttendanceMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --success-green: #059669;
+            --warning-orange: #d97706;
+            --danger-red: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            background-color: var(--gray-50);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--gray-800);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .top-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .teacher-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .teacher-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .teacher-details h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .teacher-details p {
+            margin: 0;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .quick-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .quick-btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .quick-btn-primary:hover {
+            background: #1d4ed8;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .quick-btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .quick-btn-secondary:hover {
+            background: var(--gray-200);
+            color: var(--gray-800);
+        }
+
+        /* Today's Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        .summary-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .summary-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .summary-card-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .summary-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .icon-blue { background: #dbeafe; color: var(--primary-blue); }
+        .icon-green { background: #d1fae5; color: var(--success-green); }
+        .icon-orange { background: #fed7aa; color: var(--warning-orange); }
+        .icon-red { background: #fee2e2; color: var(--danger-red); }
+
+        .summary-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .summary-card-subtitle {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin: 0.25rem 0 0 0;
+        }
+
+        /* Today's Classes */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .class-card {
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .class-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .class-card-header {
+            padding: 1rem 1.5rem;
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .class-info h6 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .class-info p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .attendance-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: var(--success-green);
+        }
+
+        .status-pending {
+            background: #fed7aa;
+            color: var(--warning-orange);
+        }
+
+        .class-card-body {
+            padding: 1.5rem;
+        }
+
+        .class-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .stat-present { color: var(--success-green); }
+        .stat-absent { color: var(--danger-red); }
+        .stat-late { color: var(--warning-orange); }
+        .stat-total { color: var(--gray-600); }
+
+        .class-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-mark {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-mark:hover {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .btn-view {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-view:hover {
+            background: var(--gray-200);
+            color: var(--gray-800);
+        }
+
+        /* Alerts Section */
+        .alerts-section {
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            margin: 2rem 0;
+        }
+
+        .alerts-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: between;
+        }
+
+        .alert-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .alert-urgent {
+            background: #fee2e2;
+            color: var(--danger-red);
+        }
+
+        .alert-warning {
+            background: #fed7aa;
+            color: var(--warning-orange);
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin: 0 0 0.25rem 0;
+        }
+
+        .alert-description {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .alert-time {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* Recent Activity */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 0.875rem;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .class-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quick-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .class-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="teacher-info">
+                        <div class="teacher-avatar">
+                            <%= currentUser.name.charAt(0).toUpperCase() %>
+                        </div>
+                        <div class="teacher-details">
+                            <h5>Good <%= getTimeOfDay() %>, <%= currentUser.name %>!</h5>
+                            <p><%= new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="quick-actions">
+                        <a href="/daily-attendance" class="quick-btn quick-btn-primary">
+                            <i class="fas fa-check-circle"></i>
+                            Mark Attendance
+                        </a>
+                        <a href="/reports" class="quick-btn quick-btn-secondary">
+                            <i class="fas fa-chart-bar"></i>
+                            View Reports
+                        </a>
+                        <a href="/notifications" class="quick-btn quick-btn-secondary">
+                            <i class="fas fa-bell"></i>
+                            Send Alert
+                        </a>
+                        <div class="dropdown">
+                            <button class="quick-btn quick-btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                                <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="/logout" class="d-inline">
+                                        <button type="submit" class="dropdown-item">Logout</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <!-- Flash Messages -->
+        <% if (typeof flash !== 'undefined' && flash && flash.message) { %>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <%= flash.message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <!-- Today's Summary -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <h6 class="summary-card-title">Classes Today</h6>
+                    <div class="summary-card-icon icon-blue">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                </div>
+                <p class="summary-card-value" id="classesToday">0</p>
+                <p class="summary-card-subtitle">Scheduled classes</p>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <h6 class="summary-card-title">Total Students</h6>
+                    <div class="summary-card-icon icon-green">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <p class="summary-card-value" id="totalStudents">0</p>
+                <p class="summary-card-subtitle">Across all classes</p>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <h6 class="summary-card-title">Attendance Rate</h6>
+                    <div class="summary-card-icon icon-orange">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                </div>
+                <p class="summary-card-value" id="attendanceRate">0%</p>
+                <p class="summary-card-subtitle">Today's average</p>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <h6 class="summary-card-title">Low Attendance</h6>
+                    <div class="summary-card-icon icon-red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <p class="summary-card-value" id="lowAttendanceCount">0</p>
+                <p class="summary-card-subtitle">Students need attention</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Today's Classes -->
+            <div class="col-lg-8">
+                <div class="section-header">
+                    <h4 class="section-title">Today's Classes</h4>
+                    <a href="/manage/class/new" class="quick-btn quick-btn-secondary">
+                        <i class="fas fa-plus"></i>
+                        Create Class
+                    </a>
+                </div>
+
+                <div id="todaysClasses">
+                    <!-- Classes will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Alerts -->
+                <div class="alerts-section">
+                    <div class="alerts-header">
+                        <h5 class="section-title">Alerts</h5>
+                    </div>
+                    <div id="alertsList">
+                        <!-- Alerts will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="alerts-section mt-3">
+                    <div class="alerts-header">
+                        <h5 class="section-title">Recent Activity</h5>
+                    </div>
+                    <div class="p-3" id="recentActivity">
+                        <!-- Recent activity will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            
+            // Refresh data every 5 minutes
+            setInterval(loadDashboardData, 300000);
+        });
+
+        // Load all dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/teacher-dashboard');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateSummaryCards(data.summary);
+                    updateTodaysClasses(data.classes);
+                    updateAlerts(data.alerts);
+                    updateRecentActivity(data.recentActivity);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Update summary cards
+        function updateSummaryCards(summary) {
+            document.getElementById('classesToday').textContent = summary.classesToday || 0;
+            document.getElementById('totalStudents').textContent = summary.totalStudents || 0;
+            document.getElementById('attendanceRate').textContent = (summary.attendanceRate || 0) + '%';
+            document.getElementById('lowAttendanceCount').textContent = summary.lowAttendanceCount || 0;
+        }
+
+        // Update today's classes
+        function updateTodaysClasses(classes) {
+            const container = document.getElementById('todaysClasses');
+            
+            if (!classes || classes.length === 0) {
+                container.innerHTML = `
+                    <div class="class-card">
+                        <div class="class-card-body text-center py-4">
+                            <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No classes scheduled for today</h5>
+                            <p class="text-muted">Create a new class or check your schedule</p>
+                            <a href="/manage/class/new" class="quick-btn quick-btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Create First Class
+                            </a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = classes.map(classItem => `
+                <div class="class-card">
+                    <div class="class-card-header">
+                        <div class="class-info">
+                            <h6>${classItem.name} - ${classItem.section}</h6>
+                            <p>${classItem.subject} • ${classItem.studentCount} students</p>
+                        </div>
+                        <div class="attendance-status">
+                            <span class="status-badge ${classItem.attendanceMarked ? 'status-completed' : 'status-pending'}">
+                                <i class="fas fa-${classItem.attendanceMarked ? 'check' : 'clock'}"></i>
+                                ${classItem.attendanceMarked ? 'Completed' : 'Pending'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="class-card-body">
+                        ${classItem.attendanceMarked ? `
+                            <div class="class-stats">
+                                <div class="stat-item">
+                                    <p class="stat-value stat-present">${classItem.presentCount || 0}</p>
+                                    <p class="stat-label">Present</p>
+                                </div>
+                                <div class="stat-item">
+                                    <p class="stat-value stat-absent">${classItem.absentCount || 0}</p>
+                                    <p class="stat-label">Absent</p>
+                                </div>
+                                <div class="stat-item">
+                                    <p class="stat-value stat-late">${classItem.lateCount || 0}</p>
+                                    <p class="stat-label">Late</p>
+                                </div>
+                                <div class="stat-item">
+                                    <p class="stat-value stat-total">${classItem.studentCount}</p>
+                                    <p class="stat-label">Total</p>
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="class-actions">
+                            ${!classItem.attendanceMarked ? `
+                                <a href="/class/${classItem.id}/daily-attendance" class="action-btn btn-mark">
+                                    <i class="fas fa-check-circle"></i>
+                                    Mark Attendance
+                                </a>
+                            ` : `
+                                <a href="/class/${classItem.id}/daily-attendance" class="action-btn btn-view">
+                                    <i class="fas fa-edit"></i>
+                                    Edit Attendance
+                                </a>
+                            `}
+                            <a href="/class/${classItem.id}/reports" class="action-btn btn-view">
+                                <i class="fas fa-chart-bar"></i>
+                                View Reports
+                            </a>
+                            <a href="/realtime-dashboard?class=${classItem.id}" class="action-btn btn-view">
+                                <i class="fas fa-broadcast-tower"></i>
+                                Live View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update alerts
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alertsList');
+            
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="alert-item">
+                        <div class="alert-icon" style="background: #d1fae5; color: var(--success-green);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="alert-content">
+                            <p class="alert-title">All good!</p>
+                            <p class="alert-description">No alerts at this time</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert-item">
+                    <div class="alert-icon ${alert.type === 'urgent' ? 'alert-urgent' : 'alert-warning'}">
+                        <i class="fas fa-${alert.type === 'urgent' ? 'exclamation' : 'warning'}"></i>
+                    </div>
+                    <div class="alert-content">
+                        <p class="alert-title">${alert.title}</p>
+                        <p class="alert-description">${alert.description}</p>
+                    </div>
+                    <div class="alert-time">${alert.time}</div>
+                </div>
+            `).join('');
+        }
+
+        // Update recent activity
+        function updateRecentActivity(activities) {
+            const container = document.getElementById('recentActivity');
+            
+            if (!activities || activities.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No recent activity</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-${activity.icon}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p class="activity-text">${activity.text}</p>
+                        <p class="activity-time">${activity.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Helper function for time of day greeting
+        function getTimeOfDay() {
+            const hour = new Date().getHours();
+            if (hour < 12) return 'Morning';
+            if (hour < 17) return 'Afternoon';
+            return 'Evening';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'm':
+                        e.preventDefault();
+                        window.location.href = '/daily-attendance';
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        window.location.href = '/reports';
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        window.location.href = '/notifications';
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+<%
+function getTimeOfDay() {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
+}
+%>

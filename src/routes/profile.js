@@ -16,7 +16,7 @@ function requireAuth(req, res, next) {
 // Configure multer for profile photo uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadDir = path.join(process.cwd(), 'src', 'public', 'uploads', 'profiles');
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'profiles');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -147,7 +147,7 @@ router.post('/profile/upload-photo', requireAuth, upload.single('profilePhoto'),
     
     // Delete old photo file if it exists
     if (oldPhotoPath && oldPhotoPath !== photoPath) {
-      const oldFilePath = path.join(process.cwd(), 'src', 'public', oldPhotoPath);
+      const oldFilePath = path.join(process.cwd(), 'public', oldPhotoPath);
       if (fs.existsSync(oldFilePath)) {
         fs.unlinkSync(oldFilePath);
       }
@@ -257,7 +257,7 @@ router.delete('/profile/delete-photo', requireAuth, async (req, res) => {
     
     if (photoPath) {
       // Delete file
-      const filePath = path.join(process.cwd(), 'src', 'public', photoPath);
+      const filePath = path.join(process.cwd(), 'public', photoPath);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }

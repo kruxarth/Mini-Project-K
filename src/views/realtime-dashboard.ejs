@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %> - <%= brand %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2d2d2d;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #2c2c2c 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(44, 62, 80, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #404040;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .status-present {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            color: white;
+        }
+
+        .status-absent {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+            color: white;
+        }
+
+        .status-late {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+            color: white;
+        }
+
+        .status-unmarked {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .student-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .student-card:hover::before {
+            left: 100%;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            border: none;
+            color: white;
+        }
+
+        .heatmap-cell {
+            width: 30px;
+            height: 30px;
+            margin: 2px;
+            border-radius: 4px;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .heatmap-low { background-color: #ff6b6b; }
+        .heatmap-medium { background-color: #feca57; }
+        .heatmap-high { background-color: #48dbfb; }
+        .heatmap-excellent { background-color: #0be881; }
+
+        .live-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        .class-selector {
+            background: var(--card-bg);
+            border: 1px solid #404040;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .class-selector:focus {
+            background: var(--card-bg);
+            border-color: var(--secondary-color);
+            color: white;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .last-updated {
+            font-size: 0.85rem;
+            color: #bdc3c7;
+            font-style: italic;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2><span class="live-indicator"></span>Real-time Attendance Dashboard</h2>
+                    <div class="d-flex align-items-center gap-3">
+                        <select id="classSelector" class="form-select class-selector">
+                            <option value="">Select a class to monitor</option>
+                            <% classes.forEach(cls => { %>
+                                <option value="<%= cls.id %>"><%= cls.name %> - <%= cls.section %> (<%= cls.subject %>)</option>
+                            <% }); %>
+                        </select>
+                        <button id="refreshBtn" class="btn refresh-btn me-2">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh
+                        </button>
+                        <button id="testRealtimeBtn" class="btn btn-warning" style="display: none;">
+                            <i class="fas fa-bolt me-2"></i>Test Real-time
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Statistics -->
+        <div class="row mb-4">
+            <% attendanceSummary.forEach(summary => { %>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <h6 class="card-title"><%= summary.class_name %> - <%= summary.section %></h6>
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <div class="h4 text-success"><%= summary.present_count || 0 %></div>
+                                    <small>Present</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="h4 text-danger"><%= summary.absent_count || 0 %></div>
+                                    <small>Absent</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="h4 text-warning"><%= summary.late_count || 0 %></div>
+                                    <small>Late</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="h4 text-info"><%= summary.total_students %></div>
+                                    <small>Total</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- Real-time Class View -->
+        <div id="realtimeView" style="display: none;">
+            <div class="row">
+                <!-- Class Statistics -->
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie me-2"></i>
+                                <span id="classTitle">Class Statistics</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="statsContainer">
+                                <!-- Statistics will be loaded here -->
+                            </div>
+                            <div class="mt-3">
+                                <canvas id="attendanceChart" width="300" height="200"></canvas>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <small class="last-updated" id="lastUpdated">Last updated: Never</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student List -->
+                <div class="col-md-8 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>
+                                Students
+                            </h5>
+                            <div class="loading-spinner" id="loadingSpinner"></div>
+                        </div>
+                        <div class="card-body">
+                            <div id="studentsContainer" class="row">
+                                <!-- Students will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Heatmap -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-fire me-2"></i>
+                            Attendance Heatmap (Last 7 Days)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="heatmapContainer">
+                            <!-- Heatmap will be loaded here -->
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <span class="heatmap-cell heatmap-low"></span> 0-60% 
+                                <span class="heatmap-cell heatmap-medium ms-3"></span> 61-75% 
+                                <span class="heatmap-cell heatmap-high ms-3"></span> 76-90% 
+                                <span class="heatmap-cell heatmap-excellent ms-3"></span> 91-100%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        let currentClassId = null;
+        let attendanceChart = null;
+
+        // DOM elements
+        const classSelector = document.getElementById('classSelector');
+        const realtimeView = document.getElementById('realtimeView');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const testRealtimeBtn = document.getElementById('testRealtimeBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Event listeners
+        classSelector.addEventListener('change', handleClassChange);
+        refreshBtn.addEventListener('click', refreshData);
+        testRealtimeBtn.addEventListener('click', testRealtimeUpdate);
+
+        // Socket event listeners
+        socket.on('attendance-updated', (data) => {
+            if (data.classId === currentClassId) {
+                loadClassData(currentClassId);
+            }
+        });
+
+        function handleClassChange() {
+            const classId = classSelector.value;
+            if (classId) {
+                currentClassId = classId;
+                socket.emit('join-class', classId);
+                realtimeView.style.display = 'block';
+                testRealtimeBtn.style.display = 'inline-block';
+                loadClassData(classId);
+            } else {
+                realtimeView.style.display = 'none';
+                testRealtimeBtn.style.display = 'none';
+                currentClassId = null;
+            }
+        }
+
+        // Test real-time functionality
+        async function testRealtimeUpdate() {
+            if (!currentClassId) return;
+            
+            try {
+                // Get a random student from the current class data
+                const response = await fetch(`/api/realtime-attendance/${currentClassId}`);
+                const data = await response.json();
+                
+                if (data.students && data.students.length > 0) {
+                    const randomStudent = data.students[Math.floor(Math.random() * data.students.length)];
+                    const statuses = ['present', 'absent', 'late'];
+                    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                    
+                    // Simulate marking attendance
+                    const testResponse = await fetch('/test/mark-attendance', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            classId: currentClassId,
+                            studentId: randomStudent.id,
+                            status: randomStatus
+                        })
+                    });
+                    
+                    if (testResponse.ok) {
+                        console.log(`Test: Marked ${randomStudent.name} as ${randomStatus}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Test real-time error:', error);
+            }
+        }
+
+        async function loadClassData(classId) {
+            showLoading(true);
+            try {
+                const response = await fetch(`/api/realtime-attendance/${classId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateClassView(data);
+                } else {
+                    console.error('Error loading class data:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading class data:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function updateClassView(data) {
+            // Update class title
+            document.getElementById('classTitle').textContent = 
+                `${data.classInfo.name} - ${data.classInfo.section}`;
+
+            // Update statistics
+            updateStatistics(data.stats);
+            
+            // Update students list
+            updateStudentsList(data.students);
+            
+            // Update chart
+            updateChart(data.stats);
+            
+            // Update last updated time
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${new Date(data.lastUpdated).toLocaleTimeString()}`;
+        }
+
+        function updateStatistics(stats) {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = `
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="h3 text-success">${stats.present}</div>
+                        <small>Present</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="h3 text-danger">${stats.absent}</div>
+                        <small>Absent</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="h3 text-warning">${stats.late}</div>
+                        <small>Late</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="h3 text-secondary">${stats.unmarked}</div>
+                        <small>Unmarked</small>
+                    </div>
+                </div>
+                <div class="progress mb-2" style="height: 8px;">
+                    <div class="progress-bar bg-success" style="width: ${(stats.present/stats.total*100)}%"></div>
+                    <div class="progress-bar bg-warning" style="width: ${(stats.late/stats.total*100)}%"></div>
+                    <div class="progress-bar bg-danger" style="width: ${(stats.absent/stats.total*100)}%"></div>
+                </div>
+                <small class="text-muted">
+                    Attendance Rate: ${stats.total > 0 ? Math.round((stats.present + stats.late) / stats.total * 100) : 0}%
+                </small>
+            `;
+        }
+
+        function updateStudentsList(students) {
+            const container = document.getElementById('studentsContainer');
+            container.innerHTML = students.map(student => `
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <div class="student-card status-${student.status}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${student.name}</strong>
+                                <br>
+                                <small>Roll: ${student.roll_number}</small>
+                            </div>
+                            <div class="text-end">
+                                <i class="fas fa-${getStatusIcon(student.status)} fa-lg"></i>
+                                ${student.marked_at ? `<br><small>${new Date(student.marked_at).toLocaleTimeString()}</small>` : ''}
+                            </div>
+                        </div>
+                        ${student.notes ? `<div class="mt-2"><small><i class="fas fa-sticky-note me-1"></i>${student.notes}</small></div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusIcon(status) {
+            switch (status) {
+                case 'present': return 'check-circle';
+                case 'absent': return 'times-circle';
+                case 'late': return 'clock';
+                default: return 'question-circle';
+            }
+        }
+
+        function updateChart(stats) {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            
+            if (attendanceChart) {
+                attendanceChart.destroy();
+            }
+            
+            attendanceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent', 'Late', 'Unmarked'],
+                    datasets: [{
+                        data: [stats.present, stats.absent, stats.late, stats.unmarked],
+                        backgroundColor: ['#27ae60', '#e74c3c', '#f39c12', '#95a5a6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function refreshData() {
+            if (currentClassId) {
+                loadClassData(currentClassId);
+            }
+            loadHeatmap();
+        }
+
+        function showLoading(show) {
+            loadingSpinner.style.display = show ? 'block' : 'none';
+        }
+
+        // Load heatmap data
+        async function loadHeatmap() {
+            try {
+                const response = await fetch('/api/attendance-heatmap?period=7');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateHeatmap(data.heatmapData);
+                }
+            } catch (error) {
+                console.error('Error loading heatmap:', error);
+            }
+        }
+
+        function updateHeatmap(heatmapData) {
+            const container = document.getElementById('heatmapContainer');
+            
+            if (heatmapData.length === 0) {
+                container.innerHTML = '<p class="text-muted">No attendance data available for heatmap.</p>';
+                return;
+            }
+            
+            // Group data by class and date
+            const groupedData = {};
+            heatmapData.forEach(item => {
+                const classKey = `${item.class_name} - ${item.section}`;
+                if (!groupedData[classKey]) {
+                    groupedData[classKey] = {};
+                }
+                groupedData[classKey][item.date] = item.attendance_rate;
+            });
+            
+            let heatmapHtml = '<div class="table-responsive"><table class="table table-sm">';
+            heatmapHtml += '<thead><tr><th>Class</th>';
+            
+            // Get unique dates for header
+            const dates = [...new Set(heatmapData.map(item => item.date))].sort().reverse();
+            dates.forEach(date => {
+                heatmapHtml += `<th class="text-center">${new Date(date).toLocaleDateString()}</th>`;
+            });
+            heatmapHtml += '</tr></thead><tbody>';
+            
+            // Create rows for each class
+            Object.keys(groupedData).forEach(className => {
+                heatmapHtml += `<tr><td>${className}</td>`;
+                dates.forEach(date => {
+                    const rate = groupedData[className][date] || 0;
+                    const cellClass = getHeatmapClass(rate);
+                    heatmapHtml += `<td class="text-center">
+                        <span class="heatmap-cell ${cellClass}" title="${rate}% attendance on ${date}">
+                            ${rate}%
+                        </span>
+                    </td>`;
+                });
+                heatmapHtml += '</tr>';
+            });
+            
+            heatmapHtml += '</tbody></table></div>';
+            container.innerHTML = heatmapHtml;
+        }
+
+        function getHeatmapClass(rate) {
+            if (rate >= 91) return 'heatmap-excellent';
+            if (rate >= 76) return 'heatmap-high';
+            if (rate >= 61) return 'heatmap-medium';
+            return 'heatmap-low';
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (currentClassId) {
+                loadClassData(currentClassId);
+            }
+        }, 30000);
+
+        // Load initial heatmap
+        loadHeatmap();
+    </script>
+</body>
+</html>

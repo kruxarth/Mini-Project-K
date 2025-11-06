@@ -1,0 +1,256 @@
+/* Dark Mode - "Stars in the Night Sky" Theme - Global Styles */
+
+/* Base Dark Theme */
+[data-theme="dark"] {
+  background: #0a0a0f !important;
+  color: #4a5568 !important;
+  min-height: 100vh;
+}
+
+[data-theme="dark"] body {
+  background: radial-gradient(ellipse at top, #0f1419 0%, #0a0a0f 50%, #000000 100%) !important;
+}
+
+/* Navigation - Deep Space */
+[data-theme="dark"] .navbar {
+  background: linear-gradient(135deg, #000000 0%, #0f1419 100%) !important;
+  border-bottom: 1px solid #1a202c;
+  backdrop-filter: blur(10px);
+}
+
+/* Sidebar - Dark Void */
+[data-theme="dark"] .sidebar {
+  background: linear-gradient(180deg, #000000 0%, #0f1419 100%) !important;
+  border-right: 1px solid #1a202c;
+}
+
+[data-theme="dark"] .sidebar .nav-link {
+  color: #4a5568 !important;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .sidebar .nav-link:hover,
+[data-theme="dark"] .sidebar .nav-link.active {
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+/* Cards - Dark Matter */
+[data-theme="dark"] .stats-card,
+[data-theme="dark"] .chart-container,
+[data-theme="dark"] .class-card,
+[data-theme="dark"] .card,
+[data-theme="dark"] .form-section {
+  background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%) !important;
+  border: 1px solid #2d3748 !important;
+  color: #4a5568 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] .stats-card:hover,
+[data-theme="dark"] .class-card:hover {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(255, 255, 255, 0.05) !important;
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .welcome-section,
+[data-theme="dark"] .profile-header {
+  background: linear-gradient(135deg, #000000 0%, #0f1419 50%, #1a202c 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* NAMES - BRIGHT STARS IN THE SKY */
+[data-theme="dark"] .welcome-title,
+[data-theme="dark"] .class-title,
+[data-theme="dark"] .navbar-brand,
+[data-theme="dark"] .card-title,
+[data-theme="dark"] .section-title,
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3,
+[data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+  color: #ffffff !important;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+}
+
+/* USER NAMES - BRIGHTEST STARS */
+[data-theme="dark"] .nav-link.dropdown-toggle,
+[data-theme="dark"] .student-name,
+[data-theme="dark"] .user-name,
+[data-theme="dark"] .teacher-name {
+  color: #ffffff !important;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(255, 255, 255, 0.6), 0 0 90px rgba(255, 255, 255, 0.3) !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px;
+  animation: starTwinkle 3s ease-in-out infinite alternate;
+}
+
+/* Star Twinkling Animation */
+@keyframes starTwinkle {
+  0% { text-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(255, 255, 255, 0.6), 0 0 90px rgba(255, 255, 255, 0.3); }
+  100% { text-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(255, 255, 255, 0.8), 0 0 120px rgba(255, 255, 255, 0.5); }
+}
+
+/* Numbers - Dim Stars */
+[data-theme="dark"] .stats-card .number,
+[data-theme="dark"] .stats-number {
+  color: #cbd5e0 !important;
+  text-shadow: 0 0 10px rgba(203, 213, 224, 0.3) !important;
+  font-weight: 600;
+}
+
+/* Everything Else - Dark Space */
+[data-theme="dark"] .stats-card .label,
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] small,
+[data-theme="dark"] p,
+[data-theme="dark"] .form-text,
+[data-theme="dark"] .form-label,
+[data-theme="dark"] span:not(.badge) {
+  color: #4a5568 !important;
+}
+
+/* Buttons - Subtle Glow */
+[data-theme="dark"] .btn-primary {
+  background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background: linear-gradient(135deg, #4a5568 0%, #718096 100%) !important;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-success {
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .btn-warning {
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .btn-outline-secondary,
+[data-theme="dark"] .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #a0aec0 !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover,
+[data-theme="dark"] .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Form Elements - Dark Inputs */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] textarea {
+  background: #0f1419 !important;
+  border: 1px solid #2d3748 !important;
+  color: #a0aec0 !important;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] textarea:focus {
+  background: #0f1419 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Dropdown Menus - Deep Space */
+[data-theme="dark"] .dropdown-menu {
+  background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%) !important;
+  border: 1px solid #2d3748 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .dropdown-item {
+  color: #4a5568 !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Progress Bars - Subtle */
+[data-theme="dark"] .progress {
+  background: #1a202c !important;
+}
+
+[data-theme="dark"] .progress-bar {
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+/* Badges - Dim Glow */
+[data-theme="dark"] .badge {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #a0aec0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tables - Dark Grid */
+[data-theme="dark"] .table {
+  color: #4a5568 !important;
+}
+
+[data-theme="dark"] .table th {
+  color: #a0aec0 !important;
+  border-color: #2d3748 !important;
+}
+
+[data-theme="dark"] .table td {
+  border-color: #2d3748 !important;
+}
+
+/* Alerts - Subtle Notifications */
+[data-theme="dark"] .alert {
+  background: #0f1419 !important;
+  border: 1px solid #2d3748 !important;
+  color: #a0aec0 !important;
+}
+
+[data-theme="dark"] .alert-info {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+}
+
+/* Student Cards - Special Treatment for Names */
+[data-theme="dark"] .student-card .student-name,
+[data-theme="dark"] .class-card .class-title {
+  color: #ffffff !important;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8) !important;
+  font-weight: 700 !important;
+}
+
+/* Modal - Dark Space */
+[data-theme="dark"] .modal-content {
+  background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%) !important;
+  border: 1px solid #2d3748 !important;
+  color: #4a5568 !important;
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom: 1px solid #2d3748 !important;
+}
+
+[data-theme="dark"] .modal-footer {
+  border-top: 1px solid #2d3748 !important;
+}

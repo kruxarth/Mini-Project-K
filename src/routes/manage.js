@@ -14,11 +14,59 @@ router.get('/manage/class/new', requireAuth, (req, res) => {
 });
 
 router.post('/manage/class/new', requireAuth, async (req, res) => {
-  const { name, section } = req.body;
-  if (!name) return res.render('manage_class_new', { error: 'Class name is required' });
-  await run(`INSERT INTO classes (name, section, teacher_id) VALUES (?,?,?)`, [name, section || null, req.session.user.id]);
-  req.session.flash = { type: 'success', message: 'Class created' };
-  res.redirect('/dashboard');
+  const { 
+    name, section, department, semester, academic_year, teacher_id, subject, description,
+    num_students, attendance_type, min_attendance, auto_notifications, 
+    notification_email, notification_sms 
+  } = req.body;
+  
+  try {
+    // Validation
+    if (!name) return res.render('manage_class_new', { error: 'Class name is required' });
+    if (!department) return res.render('manage_class_new', { error: 'Department is required' });
+    if (!semester) return res.render('manage_class_new', { error: 'Semester/Year is required' });
+    if (!academic_year) return res.render('manage_class_new', { error: 'Academic year is required' });
+    if (!attendance_type) return res.render('manage_class_new', { error: 'Attendance type is required' });
+    
+    // Check for duplicate class name in the same academic year
+    const existing = await all(`SELECT id FROM classes WHERE name = ? AND academic_year = ?`, [name, academic_year]);
+    if (existing.length > 0) {
+      return res.render('manage_class_new', { 
+        error: 'A class with this name already exists in the selected academic year' 
+      });
+    }
+    
+    // Create class with all fields
+    await run(`
+      INSERT INTO classes (
+        name, section, teacher_id, department, semester, academic_year, subject, description,
+        num_students, attendance_type, min_attendance, auto_notifications, 
+        notification_email, notification_sms
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      name, 
+      section || null, 
+      teacher_id || req.session.user.id, 
+      department, 
+      semester, 
+      academic_year, 
+      subject || null, 
+      description || null,
+      num_students ? parseInt(num_students) : null,
+      attendance_type || 'period-wise',
+      min_attendance ? parseInt(min_attendance) : 75,
+      auto_notifications ? 1 : 0,
+      notification_email ? 1 : 0,
+      notification_sms ? 1 : 0
+    ]);
+    
+    req.session.flash = { type: 'success', message: 'Class created successfully with all configurations' };
+    res.redirect('/dashboard');
+    
+  } catch (error) {
+    console.error('Class creation error:', error);
+    res.render('manage_class_new', { error: 'Failed to create class. Please try again.' });
+  }
 });
 
 // Add Student to class
@@ -80,19 +128,162 @@ router.post('/class/:id/periods/:pid/edit', requireAuth, async (req, res) => {
 
 export default router;
  
-// Manage students list
+// Enhanced Student Management
 router.get('/class/:id/students/manage', requireAuth, async (req, res) => {
   const classId = parseInt(req.params.id, 10);
   const klass = (await all(`SELECT * FROM classes WHERE id = ? AND teacher_id = ?`, [classId, req.session.user.id]))[0];
   if (!klass) return res.status(404).send('Not found');
+  
   const students = await all(`
-    SELECT s.*, g.id as guardian_id, g.name as guardian_name, g.email as guardian_email, g.phone as guardian_phone
+    SELECT s.*, 
+           g.id as guardian_id, 
+           g.name as guardian_name, 
+           g.email as guardian_email, 
+           g.phone as guardian_phone,
+           COUNT(a.id) as total_days,
+           SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) as present_days,
+           ROUND(
+             (SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) * 100.0 / 
+              NULLIF(COUNT(a.id), 0)), 1
+           ) as attendance_percentage
+    FROM students s
+    LEFT JOIN guardians g ON g.student_id = s.id
+    LEFT JOIN attendance a ON a.student_id = s.id
+    WHERE s.class_id = ?
+    GROUP BY s.id
+    ORDER BY CAST(s.roll_no AS INT)
+  `, [classId]);
+  
+  res.render('student-management', { klass, students });
+});
+
+// API endpoint for student data (for AJAX operations)
+router.get('/api/class/:id/students/:sid', requireAuth, async (req, res) => {
+  const classId = parseInt(req.params.id, 10);
+  const studentId = parseInt(req.params.sid, 10);
+  
+  const klass = (await all(`SELECT * FROM classes WHERE id = ? AND teacher_id = ?`, [classId, req.session.user.id]))[0];
+  if (!klass) return res.status(404).json({ error: 'Class not found' });
+  
+  const student = (await all(`
+    SELECT s.*, g.name as guardian_name, g.email as guardian_email, g.phone as guardian_phone
+    FROM students s
+    LEFT JOIN guardians g ON g.student_id = s.id
+    WHERE s.id = ? AND s.class_id = ?
+  `, [studentId, classId]))[0];
+  
+  if (!student) return res.status(404).json({ error: 'Student not found' });
+  
+  res.json(student);
+});
+
+// Add/Update student with comprehensive fields
+router.post('/class/:id/students/save', requireAuth, async (req, res) => {
+  const classId = parseInt(req.params.id, 10);
+  const klass = (await all(`SELECT * FROM classes WHERE id = ? AND teacher_id = ?`, [classId, req.session.user.id]))[0];
+  if (!klass) return res.status(404).json({ error: 'Class not found' });
+  
+  const {
+    student_id, name, roll_no, email, phone, date_of_birth, enrollment_status,
+    academic_year, branch, address, emergency_contact, emergency_phone, notes,
+    guardian_name, guardian_email, guardian_phone
+  } = req.body;
+  
+  try {
+    let studentId;
+    
+    if (student_id) {
+      // Update existing student
+      await run(`
+        UPDATE students SET 
+          name = ?, roll_no = ?, email = ?, phone = ?, date_of_birth = ?,
+          enrollment_status = ?, academic_year = ?, branch = ?, address = ?, 
+          emergency_contact = ?, emergency_phone = ?, notes = ?, updated_at = datetime('now')
+        WHERE id = ? AND class_id = ?
+      `, [
+        name, roll_no || null, email || null, phone || null, date_of_birth || null,
+        enrollment_status || 'active', academic_year || null, branch || null, 
+        address || null, emergency_contact || null, emergency_phone || null, 
+        notes || null, student_id, classId
+      ]);
+      studentId = student_id;
+    } else {
+      // Create new student
+      const result = await run(`
+        INSERT INTO students (
+          name, roll_no, email, phone, date_of_birth, enrollment_status,
+          academic_year, branch, address, emergency_contact, emergency_phone, notes, class_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        name, roll_no || null, email || null, phone || null, date_of_birth || null,
+        enrollment_status || 'active', academic_year || null, branch || null,
+        address || null, emergency_contact || null, emergency_phone || null, 
+        notes || null, classId
+      ]);
+      studentId = result.lastID;
+    }
+    
+    // Handle guardian information
+    const existingGuardian = await all(`SELECT * FROM guardians WHERE student_id = ?`, [studentId]);
+    
+    if (guardian_name || guardian_email || guardian_phone) {
+      if (existingGuardian.length > 0) {
+        await run(`
+          UPDATE guardians SET name = ?, email = ?, phone = ? WHERE student_id = ?
+        `, [guardian_name || null, guardian_email || null, guardian_phone || null, studentId]);
+      } else {
+        await run(`
+          INSERT INTO guardians (name, email, phone, preferred_channel, student_id)
+          VALUES (?, ?, ?, 'email', ?)
+        `, [guardian_name || null, guardian_email || null, guardian_phone || null, studentId]);
+      }
+    }
+    
+    res.json({ success: true, message: student_id ? 'Student updated successfully' : 'Student added successfully' });
+    
+  } catch (error) {
+    console.error('Student save error:', error);
+    res.status(500).json({ error: 'Failed to save student' });
+  }
+});
+
+// Export students data
+router.get('/class/:id/students/export', requireAuth, async (req, res) => {
+  const classId = parseInt(req.params.id, 10);
+  const klass = (await all(`SELECT * FROM classes WHERE id = ? AND teacher_id = ?`, [classId, req.session.user.id]))[0];
+  if (!klass) return res.status(404).send('Class not found');
+  
+  const students = await all(`
+    SELECT s.*, g.name as guardian_name, g.email as guardian_email, g.phone as guardian_phone
     FROM students s
     LEFT JOIN guardians g ON g.student_id = s.id
     WHERE s.class_id = ?
     ORDER BY CAST(s.roll_no AS INT)
   `, [classId]);
-  res.render('manage_students', { klass, students });
+  
+  // Generate CSV
+  const csvHeader = 'Name,Roll No,Email,Phone,Date of Birth,Status,Address,Emergency Contact,Emergency Phone,Guardian Name,Guardian Email,Guardian Phone,Notes\n';
+  const csvRows = students.map(s => [
+    s.name || '',
+    s.roll_no || '',
+    s.email || '',
+    s.phone || '',
+    s.date_of_birth || '',
+    s.enrollment_status || 'active',
+    s.address || '',
+    s.emergency_contact || '',
+    s.emergency_phone || '',
+    s.guardian_name || '',
+    s.guardian_email || '',
+    s.guardian_phone || '',
+    s.notes || ''
+  ].map(field => `"${field}"`).join(',')).join('\n');
+  
+  const csv = csvHeader + csvRows;
+  
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="${klass.name}_students.csv"`);
+  res.send(csv);
 });
 
 router.post('/class/:id/students/:sid/edit', requireAuth, async (req, res) => {

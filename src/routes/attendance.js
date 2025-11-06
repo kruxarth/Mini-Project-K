@@ -38,6 +38,17 @@ router.post('/class/:id/attendance', requireAuth, async (req, res) => {
     );
   }
 
+  // Emit real-time update via WebSocket
+  const io = req.app.get('io');
+  if (io) {
+    io.to(`class-${classId}`).emit('attendance-updated', {
+      classId,
+      date,
+      updatedBy: req.session.user.id,
+      timestamp: new Date().toISOString()
+    });
+  }
+
   const absentees = await all(`SELECT a.*, s.name as student_name, g.email as guardian_email, g.phone as guardian_phone, g.preferred_channel as preferred_channel
     FROM attendance a
     JOIN students s ON s.id = a.student_id

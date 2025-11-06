@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/dark-mode.css">
   <style>
     .profile-header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -14,6 +15,142 @@
       border-radius: 15px;
       padding: 30px;
       margin-bottom: 30px;
+    }
+    
+    /* Dark Mode - "Stars in the Night Sky" Theme */
+    [data-theme="dark"] {
+      background: #0a0a0f !important;
+      color: #4a5568 !important;
+      min-height: 100vh;
+    }
+    
+    [data-theme="dark"] body {
+      background: radial-gradient(ellipse at top, #0f1419 0%, #0a0a0f 50%, #000000 100%) !important;
+    }
+    
+    [data-theme="dark"] .navbar {
+      background: linear-gradient(135deg, #000000 0%, #0f1419 100%) !important;
+      border-bottom: 1px solid #1a202c;
+    }
+    
+    [data-theme="dark"] .profile-header {
+      background: linear-gradient(135deg, #000000 0%, #0f1419 50%, #1a202c 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    [data-theme="dark"] .stats-card,
+    [data-theme="dark"] .form-section,
+    [data-theme="dark"] .card {
+      background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%) !important;
+      border: 1px solid #2d3748 !important;
+      color: #4a5568 !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    /* NAMES - BRIGHT STARS */
+    [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3,
+    [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+    [data-theme="dark"] .section-title,
+    [data-theme="dark"] .navbar-brand {
+      color: #ffffff !important;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4) !important;
+      font-weight: 700 !important;
+    }
+    
+    /* USER NAME - BRIGHTEST STAR */
+    [data-theme="dark"] .nav-link.dropdown-toggle {
+      color: #ffffff !important;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(255, 255, 255, 0.6) !important;
+      font-weight: 800 !important;
+      animation: starTwinkle 3s ease-in-out infinite alternate;
+    }
+    
+    @keyframes starTwinkle {
+      0% { text-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(255, 255, 255, 0.6); }
+      100% { text-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(255, 255, 255, 0.8); }
+    }
+    
+    /* Numbers - Dim Stars */
+    [data-theme="dark"] .stats-number {
+      color: #cbd5e0 !important;
+      text-shadow: 0 0 10px rgba(203, 213, 224, 0.3) !important;
+    }
+    
+    /* Form Elements */
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] textarea {
+      background: #0f1419 !important;
+      border: 1px solid #2d3748 !important;
+      color: #a0aec0 !important;
+    }
+    
+    [data-theme="dark"] .form-control:focus,
+    [data-theme="dark"] textarea:focus {
+      background: #0f1419 !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1) !important;
+      color: #e2e8f0 !important;
+    }
+    
+    [data-theme="dark"] .form-label {
+      color: #a0aec0 !important;
+    }
+    
+    [data-theme="dark"] .form-text {
+      color: #4a5568 !important;
+    }
+    
+    /* Buttons */
+    [data-theme="dark"] .btn-primary {
+      background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: #e2e8f0 !important;
+    }
+    
+    [data-theme="dark"] .btn-primary:hover {
+      background: linear-gradient(135deg, #4a5568 0%, #718096 100%) !important;
+      color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] .btn-warning {
+      background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: #e2e8f0 !important;
+    }
+    
+    [data-theme="dark"] .btn-outline-light {
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      color: #a0aec0 !important;
+    }
+    
+    [data-theme="dark"] .btn-outline-light:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #e2e8f0 !important;
+    }
+    
+    /* Dropdown */
+    [data-theme="dark"] .dropdown-menu {
+      background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%) !important;
+      border: 1px solid #2d3748 !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+    }
+    
+    [data-theme="dark"] .dropdown-item {
+      color: #4a5568 !important;
+    }
+    
+    [data-theme="dark"] .dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #e2e8f0 !important;
+    }
+    
+    /* Everything else stays dark */
+    [data-theme="dark"] p,
+    [data-theme="dark"] small,
+    [data-theme="dark"] .text-muted,
+    [data-theme="dark"] .form-text {
+      color: #4a5568 !important;
     }
     .profile-photo {
       width: 120px;
@@ -103,6 +240,12 @@
             <i class="fas fa-user-circle me-1"></i><%= teacher.name %>
           </a>
           <ul class="dropdown-menu">
+            <li>
+              <button class="dropdown-item" onclick="toggleDarkMode()">
+                <i class="fas fa-moon me-2"></i>Toggle Dark Mode
+              </button>
+            </li>
+            <li><hr class="dropdown-divider"></li>
             <li>
               <form method="post" action="/logout" class="d-inline">
                 <button type="submit" class="dropdown-item">
@@ -454,6 +597,24 @@
         }
       }, 5000);
     }
+
+    // Dark Mode Functions
+    function toggleDarkMode() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    // Load saved theme
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    // Initialize theme on page load
+    loadTheme();
   </script>
 </body>
 </html>

@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Class - AttendanceMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --success-green: #059669;
+            --warning-orange: #d97706;
+            --danger-red: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            background-color: var(--gray-50);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .create-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.5rem 0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .form-header h3 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+
+        .form-body {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .form-control.is-valid {
+            border-color: var(--success-green);
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger-red);
+        }
+
+        /* Student Selection */
+        .student-selection {
+            border: 2px solid var(--gray-200);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .selection-header {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: between;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            margin-right: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .bulk-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.375rem;
+            background: white;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bulk-btn:hover {
+            background: var(--gray-50);
+        }
+
+        .available-students, .selected-students {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .student-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .student-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .student-item:hover {
+            background: var(--gray-50);
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--gray-300);
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .student-checkbox.checked {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        .student-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .student-details {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        /* Drag and Drop */
+        .drag-drop-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .drag-drop-area:hover,
+        .drag-drop-area.dragover {
+            border-color: var(--primary-blue);
+            background: #eff6ff;
+        }
+
+        .drag-drop-icon {
+            font-size: 3rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+        }
+
+        /* Selected Students Display */
+        .selected-display {
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .selected-count {
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .student-tag {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 1rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .remove-tag {
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .remove-tag:hover {
+            color: var(--danger-red);
+        }
+
+        /* Action Buttons */
+        .form-actions {
+            background: var(--gray-50);
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            gap: 1rem;
+            justify-content: end;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid var(--gray-200);
+            color: var(--gray-700);
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+            color: var(--gray-800);
+        }
+
+        /* Validation */
+        .invalid-feedback {
+            color: var(--danger-red);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .valid-feedback {
+            color: var(--success-green);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Loading */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 1rem;
+                border-radius: 0.5rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .bulk-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="create-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 style="margin: 0; color: var(--gray-900);">Create New Class</h4>
+                    <p style="margin: 0; color: var(--gray-600); font-size: 0.875rem;">Set up a new class and assign students</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="/teacher-dashboard" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        <% if (typeof flash !== 'undefined' && flash && flash.message) { %>
+            <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                <%= flash.message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <div class="form-container">
+            <div class="form-header">
+                <h3>Create New Class</h3>
+                <p>Fill in the class details and select students to get started</p>
+            </div>
+
+            <form id="createClassForm" method="POST" action="/manage/class/new">
+                <div class="form-body">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            Class Information
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="className">Class Name *</label>
+                                    <input type="text" class="form-control" id="className" name="name" 
+                                           placeholder="e.g., FE-IT-A, SE-COMP-B, TE-MECH-A" required>
+                                    <div class="form-text">Unique identifier for the class (must be unique per academic year)</div>
+                                    <div class="invalid-feedback">Please enter a unique class name</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="department">Department *</label>
+                                    <select class="form-control" id="department" name="department" required>
+                                        <option value="">Select Department</option>
+                                        <option value="Computer Engineering">Computer Engineering</option>
+                                        <option value="Information Technology">Information Technology</option>
+                                        <option value="Electronics & Telecommunication">Electronics & Telecommunication</option>
+                                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                        <option value="Civil Engineering">Civil Engineering</option>
+                                        <option value="Electrical Engineering">Electrical Engineering</option>
+                                        <option value="Chemical Engineering">Chemical Engineering</option>
+                                        <option value="Automobile Engineering">Automobile Engineering</option>
+                                        <option value="Production Engineering">Production Engineering</option>
+                                        <option value="Applied Sciences">Applied Sciences</option>
+                                        <option value="Management Studies">Management Studies</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a department</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="semester">Semester / Year *</label>
+                                    <select class="form-control" id="semester" name="semester" required>
+                                        <option value="">Select Semester/Year</option>
+                                        <optgroup label="Semester System">
+                                            <option value="Semester 1">Semester 1</option>
+                                            <option value="Semester 2">Semester 2</option>
+                                            <option value="Semester 3">Semester 3</option>
+                                            <option value="Semester 4">Semester 4</option>
+                                            <option value="Semester 5">Semester 5</option>
+                                            <option value="Semester 6">Semester 6</option>
+                                            <option value="Semester 7">Semester 7</option>
+                                            <option value="Semester 8">Semester 8</option>
+                                        </optgroup>
+                                        <optgroup label="Year System">
+                                            <option value="First Year">First Year (FE)</option>
+                                            <option value="Second Year">Second Year (SE)</option>
+                                            <option value="Third Year">Third Year (TE)</option>
+                                            <option value="Fourth Year">Fourth Year (BE)</option>
+                                        </optgroup>
+                                    </select>
+                                    <div class="invalid-feedback">Please select semester/year</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="section">Section / Division</label>
+                                    <select class="form-control" id="section" name="section">
+                                        <option value="">Select Section (Optional)</option>
+                                        <option value="A">Section A</option>
+                                        <option value="B">Section B</option>
+                                        <option value="C">Section C</option>
+                                        <option value="D">Section D</option>
+                                        <option value="E">Section E</option>
+                                        <option value="1">Division 1</option>
+                                        <option value="2">Division 2</option>
+                                        <option value="3">Division 3</option>
+                                    </select>
+                                    <div class="form-text">Optional section/division identifier</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="academicYear">Academic Year *</label>
+                                    <select class="form-control" id="academicYear" name="academic_year" required>
+                                        <option value="">Select Academic Year</option>
+                                        <option value="2024-2025" selected>2024-2025</option>
+                                        <option value="2025-2026">2025-2026</option>
+                                        <option value="2023-2024">2023-2024</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select academic year</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="classTeacher">Class Teacher *</label>
+                                    <select class="form-control" id="classTeacher" name="teacher_id" required>
+                                        <option value="<%= user.id %>" selected><%= user.name %> (You)</option>
+                                        <!-- Additional teachers loaded dynamically -->
+                                    </select>
+                                    <div class="form-text">Assigned teacher for this class (defaults to you)</div>
+                                    <div class="invalid-feedback">Please select a class teacher</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="subject">Subject/Course</label>
+                                    <input type="text" class="form-control" id="subject" name="subject" 
+                                           placeholder="e.g., Data Structures, Engineering Mathematics">
+                                    <div class="form-text">Optional subject or course name</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Class Configuration -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-cogs"></i>
+                            Class Configuration
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="numStudents">Number of Students</label>
+                                    <input type="number" class="form-control" id="numStudents" name="num_students" 
+                                           placeholder="e.g., 60" min="1" max="200">
+                                    <div class="form-text">Expected number of students (auto-counted after import)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="attendanceType">Attendance Type *</label>
+                                    <select class="form-control" id="attendanceType" name="attendance_type" required>
+                                        <option value="period-wise" selected>Period-wise Attendance</option>
+                                        <option value="daily">Daily Attendance</option>
+                                    </select>
+                                    <div class="form-text">How attendance will be tracked</div>
+                                    <div class="invalid-feedback">Please select attendance type</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="minAttendance">Minimum Attendance (%)</label>
+                                    <input type="number" class="form-control" id="minAttendance" name="min_attendance" 
+                                           placeholder="75" min="0" max="100" value="75">
+                                    <div class="form-text">Required attendance percentage (default: 75%)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check-container">
+                                        <input type="checkbox" class="form-check-input" id="autoNotifications" 
+                                               name="auto_notifications" value="1" checked>
+                                        <label class="form-check-label" for="autoNotifications">
+                                            <strong>Enable Auto Notifications</strong>
+                                            <div class="form-text">Automatically send email/SMS alerts to guardians</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="notificationTypes">Notification Types</label>
+                                    <div class="checkbox-group">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="emailNotif" 
+                                                   name="notification_email" value="1" checked>
+                                            <label class="form-check-label" for="emailNotif">Email Alerts</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="smsNotif" 
+                                                   name="notification_sms" value="1">
+                                            <label class="form-check-label" for="smsNotif">SMS Alerts</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="description">Description & Notes</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3" 
+                                              placeholder="Optional description about the class, schedule, special requirements, or notes..."></textarea>
+                                    <div class="form-text">Additional information about the class</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Selection -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-users"></i>
+                            Select Students
+                        </h5>
+
+                        <!-- CSV Upload Option -->
+                        <div class="drag-drop-area" onclick="document.getElementById('csvFile').click()">
+                            <div class="drag-drop-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h6>Upload Student List (CSV)</h6>
+                            <p style="color: var(--gray-600); margin: 0;">
+                                Drag and drop a CSV file or click to browse
+                            </p>
+                            <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+                        </div>
+
+                        <div style="text-align: center; margin: 1rem 0; color: var(--gray-600);">
+                            <span style="background: white; padding: 0 1rem;">OR</span>
+                        </div>
+
+                        <!-- Manual Selection -->
+                        <div class="student-selection">
+                            <div class="selection-header">
+                                <div class="search-box">
+                                    <div class="search-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <input type="text" class="search-input" id="studentSearch" 
+                                           placeholder="Search students by name or roll number..." 
+                                           onkeyup="filterStudents()">
+                                </div>
+                                <div class="bulk-actions">
+                                    <button type="button" class="bulk-btn" onclick="selectAllVisible()">
+                                        Select All
+                                    </button>
+                                    <button type="button" class="bulk-btn" onclick="clearSelection()">
+                                        Clear All
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="available-students">
+                                <ul class="student-list" id="studentList">
+                                    <!-- Students will be loaded here -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Selected Students Display -->
+                        <div class="selected-display" id="selectedDisplay" style="display: none;">
+                            <div class="selected-count" id="selectedCount">0 students selected</div>
+                            <div class="selected-tags" id="selectedTags">
+                                <!-- Selected student tags will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/teacher-dashboard" class="btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <i class="fas fa-plus"></i>
+                        Create Class
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let availableStudents = [];
+        let selectedStudents = new Set();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAvailableStudents();
+            setupFormValidation();
+        });
+
+        // Load available students
+        async function loadAvailableStudents() {
+            try {
+                const response = await fetch('/api/available-students');
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableStudents = data.students;
+                    renderStudentList();
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+                showMessage('Error loading students', 'error');
+            }
+        }
+
+        // Render student list
+        function renderStudentList(filteredStudents = null) {
+            const students = filteredStudents || availableStudents;
+            const listContainer = document.getElementById('studentList');
+            
+            if (students.length === 0) {
+                listContainer.innerHTML = `
+                    <li class="student-item">
+                        <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                            <p>No students available. Add students first or upload a CSV file.</p>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = students.map(student => `
+                <li class="student-item" onclick="toggleStudent(${student.id})">
+                    <div class="student-checkbox ${selectedStudents.has(student.id) ? 'checked' : ''}" 
+                         id="checkbox-${student.id}">
+                        ${selectedStudents.has(student.id) ? '<i class="fas fa-check"></i>' : ''}
+                    </div>
+                    <div class="student-avatar">
+                        ${student.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="student-info">
+                        <p class="student-name">${student.name}</p>
+                        <p class="student-details">
+                            Roll: ${student.roll_number || 'Not assigned'}
+                            ${student.current_class ? ` • Currently in: ${student.current_class}` : ''}
+                        </p>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // Toggle student selection
+        function toggleStudent(studentId) {
+            if (selectedStudents.has(studentId)) {
+                selectedStudents.delete(studentId);
+            } else {
+                selectedStudents.add(studentId);
+            }
+            
+            updateStudentCheckbox(studentId);
+            updateSelectedDisplay();
+        }
+
+        // Update checkbox appearance
+        function updateStudentCheckbox(studentId) {
+            const checkbox = document.getElementById(`checkbox-${studentId}`);
+            if (selectedStudents.has(studentId)) {
+                checkbox.classList.add('checked');
+                checkbox.innerHTML = '<i class="fas fa-check"></i>';
+            } else {
+                checkbox.classList.remove('checked');
+                checkbox.innerHTML = '';
+            }
+        }
+
+        // Update selected students display
+        function updateSelectedDisplay() {
+            const display = document.getElementById('selectedDisplay');
+            const count = document.getElementById('selectedCount');
+            const tags = document.getElementById('selectedTags');
+            
+            if (selectedStudents.size === 0) {
+                display.style.display = 'none';
+                return;
+            }
+            
+            display.style.display = 'block';
+            count.textContent = `${selectedStudents.size} student${selectedStudents.size > 1 ? 's' : ''} selected`;
+            
+            const selectedStudentData = availableStudents.filter(s => selectedStudents.has(s.id));
+            tags.innerHTML = selectedStudentData.map(student => `
+                <div class="student-tag">
+                    ${student.name}
+                    <span class="remove-tag" onclick="toggleStudent(${student.id})">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Filter students
+        function filterStudents() {
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            const filtered = availableStudents.filter(student => 
+                student.name.toLowerCase().includes(searchTerm) ||
+                (student.roll_number && student.roll_number.toLowerCase().includes(searchTerm))
+            );
+            renderStudentList(filtered);
+        }
+
+        // Bulk actions
+        function selectAllVisible() {
+            const visibleStudents = document.querySelectorAll('.student-item');
+            visibleStudents.forEach(item => {
+                const studentId = parseInt(item.getAttribute('onclick').match(/\d+/)[0]);
+                if (!selectedStudents.has(studentId)) {
+                    selectedStudents.add(studentId);
+                    updateStudentCheckbox(studentId);
+                }
+            });
+            updateSelectedDisplay();
+        }
+
+        function clearSelection() {
+            selectedStudents.clear();
+            document.querySelectorAll('.student-checkbox').forEach(checkbox => {
+                checkbox.classList.remove('checked');
+                checkbox.innerHTML = '';
+            });
+            updateSelectedDisplay();
+        }
+
+        // CSV Upload
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    const students = [];
+                    
+                    // Skip header row
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (line) {
+                            const [name, rollNumber, email] = line.split(',').map(s => s.trim());
+                            if (name) {
+                                students.push({ name, rollNumber, email });
+                            }
+                        }
+                    }
+                    
+                    if (students.length > 0) {
+                        showCSVPreview(students);
+                    } else {
+                        showMessage('No valid student data found in CSV', 'error');
+                    }
+                } catch (error) {
+                    console.error('CSV parsing error:', error);
+                    showMessage('Error parsing CSV file', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Show CSV preview
+        function showCSVPreview(students) {
+            // This would show a modal with CSV data preview
+            // For now, we'll just add them to available students
+            const newStudents = students.map((student, index) => ({
+                id: `csv-${index}`,
+                name: student.name,
+                roll_number: student.rollNumber,
+                email: student.email,
+                isNew: true
+            }));
+            
+            availableStudents = [...availableStudents, ...newStudents];
+            renderStudentList();
+            
+            showMessage(`${students.length} students loaded from CSV`, 'success');
+        }
+
+        // Form validation
+        function setupFormValidation() {
+            const form = document.getElementById('createClassForm');
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            
+            // Class name uniqueness check
+            const classNameInput = document.getElementById('className');
+            const academicYearSelect = document.getElementById('academicYear');
+            
+            function checkClassNameUniqueness() {
+                const className = classNameInput.value.trim();
+                const academicYear = academicYearSelect.value;
+                
+                if (className && academicYear) {
+                    // Simple client-side format validation
+                    const classNamePattern = /^[A-Z]{2}-[A-Z]{2,4}-[A-Z]$/;
+                    if (!classNamePattern.test(className)) {
+                        classNameInput.setCustomValidity('Class name should follow format: FE-IT-A, SE-COMP-B, etc.');
+                    } else {
+                        classNameInput.setCustomValidity('');
+                    }
+                }
+            }
+            
+            classNameInput.addEventListener('blur', checkClassNameUniqueness);
+            academicYearSelect.addEventListener('change', checkClassNameUniqueness);
+            
+            inputs.forEach(input => {
+                input.addEventListener('blur', validateField);
+                input.addEventListener('input', clearValidation);
+            });
+            
+            form.addEventListener('submit', handleSubmit);
+        }
+
+        function validateField(event) {
+            const field = event.target;
+            const value = field.value.trim();
+            
+            if (field.hasAttribute('required') && !value) {
+                field.classList.add('is-invalid');
+                return false;
+            } else {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+                return true;
+            }
+        }
+
+        function clearValidation(event) {
+            const field = event.target;
+            field.classList.remove('is-invalid', 'is-valid');
+        }
+
+        // Handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            // Validate required fields
+            const form = event.target;
+            const requiredFields = form.querySelectorAll('input[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!validateField({ target: field })) {
+                    isValid = false;
+                }
+            });
+            
+            // Check if students are selected
+            if (selectedStudents.size === 0) {
+                showMessage('Please select at least one student', 'error');
+                return;
+            }
+            
+            if (!isValid) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Class...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Prepare form data
+                const formData = new FormData(form);
+                
+                // Add selected students
+                selectedStudents.forEach(studentId => {
+                    formData.append('students[]', studentId);
+                });
+                
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    showMessage('Class created successfully!', 'success');
+                    
+                    // Redirect to attendance marking
+                    setTimeout(() => {
+                        window.location.href = '/teacher-dashboard';
+                    }, 1500);
+                } else {
+                    throw new Error('Failed to create class');
+                }
+            } catch (error) {
+                console.error('Error creating class:', error);
+                showMessage('Error creating class. Please try again.', 'error');
+            } finally {
+                // Reset button
+                submitBtn.innerHTML = '<i class="fas fa-plus"></i> Create Class';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 'alert-info';
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Drag and drop for CSV
+        const dragDropArea = document.querySelector('.drag-drop-area');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            dragDropArea.classList.add('dragover');
+        }
+        
+        function unhighlight(e) {
+            dragDropArea.classList.remove('dragover');
+        }
+        
+        dragDropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                document.getElementById('csvFile').files = files;
+                handleCSVUpload({ target: { files: files } });
+            }
+        }
+    </script>
+</body>
+</html>

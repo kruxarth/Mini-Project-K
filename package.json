@@ -4,6 +4,7 @@
   "description": "A web based attendance management system built with Node.js and SQLite",
   "private": true,
   "type": "module",
+  "main": "api/index.js",
   "scripts": {
     "setup": "node setup.js",
     "dev": "nodemon src/app.js",
@@ -20,7 +21,8 @@
     "docker:build": "docker build -t attendancems .",
     "docker:run": "docker run -p 3000:3000 attendancems",
     "docker:compose": "docker-compose up -d",
-    "security:audit": "npm audit --audit-level=moderate"
+    "security:audit": "npm audit --audit-level=moderate",
+    "vercel-build": "echo 'Build complete'"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -31,7 +33,9 @@
     "express": "^4.19.2",
     "express-session": "^1.17.3",
     "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^6.9.15",
+    "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
     "twilio": "^4.21.0"
   },

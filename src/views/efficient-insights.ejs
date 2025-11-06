@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights - AttendanceMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --success-green: #059669;
+            --warning-orange: #d97706;
+            --danger-red: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            background-color: var(--gray-50);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .insights-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.5rem 0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        /* Insight Cards */
+        .insight-card {
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        .insight-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 1rem;
+        }
+
+        .insight-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .icon-blue { background: #dbeafe; color: var(--primary-blue); }
+        .icon-green { background: #d1fae5; color: var(--success-green); }
+        .icon-orange { background: #fed7aa; color: var(--warning-orange); }
+        .icon-red { background: #fee2e2; color: var(--danger-red); }
+
+        .insight-action {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .action-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .action-primary:hover {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .action-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .action-secondary:hover {
+            background: var(--gray-200);
+            color: var(--gray-800);
+        }
+
+        /* Top Insights Grid */
+        .top-insights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .top-insight-card {
+            background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .top-insight-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .top-insight-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin: 0.5rem 0 0 0;
+        }
+
+        .top-insight-change {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        /* Student Lists */
+        .student-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .student-details {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .student-metric {
+            text-align: right;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .metric-good { color: var(--success-green); }
+        .metric-warning { color: var(--warning-orange); }
+        .metric-danger { color: var(--danger-red); }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        /* Predictions */
+        .prediction-item {
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .prediction-title {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin: 0 0 0.25rem 0;
+        }
+
+        .prediction-description {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .prediction-confidence {
+            font-size: 0.75rem;
+            color: var(--primary-blue);
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-insights {
+                grid-template-columns: 1fr;
+            }
+            
+            .insight-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="insights-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 style="margin: 0; color: var(--gray-900);">Attendance Insights</h4>
+                    <p style="margin: 0; color: var(--gray-600); font-size: 0.875rem;">Actionable analytics for your classes</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="/teacher-dashboard" class="insight-action action-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-3">
+        <!-- Flash Messages -->
+        <% if (typeof flash !== 'undefined' && flash && flash.message) { %>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <%= flash.message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <!-- Top Insights -->
+        <div class="top-insights" id="topInsights">
+            <!-- Top insights will be loaded here -->
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Low Attendance Alert -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h5 class="insight-title">
+                            <div class="insight-icon icon-red">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            Students Needing Attention
+                        </h5>
+                        <a href="/notifications" class="insight-action action-primary">
+                            <i class="fas fa-bell"></i>
+                            Send Alerts
+                        </a>
+                    </div>
+                    <div id="lowAttendanceStudents">
+                        <!-- Low attendance students will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Attendance Trends -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h5 class="insight-title">
+                            <div class="insight-icon icon-blue">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            Attendance Trends (Last 30 Days)
+                        </h5>
+                        <a href="/reports" class="insight-action action-secondary">
+                            <i class="fas fa-chart-bar"></i>
+                            View Reports
+                        </a>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Class Performance -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h5 class="insight-title">
+                            <div class="insight-icon icon-green">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            Class Performance Comparison
+                        </h5>
+                        <a href="/realtime-dashboard" class="insight-action action-secondary">
+                            <i class="fas fa-broadcast-tower"></i>
+                            Live View
+                        </a>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Top Performers -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h5 class="insight-title">
+                            <div class="insight-icon icon-green">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            Top Performers
+                        </h5>
+                    </div>
+                    <ul class="student-list" id="topPerformers">
+                        <!-- Top performers will be loaded here -->
+                    </ul>
+                </div>
+
+                <!-- Predictive Insights -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h5 class="insight-title">
+                            <div class="insight-icon icon-orange">
+                                <i class="fas fa-crystal-ball"></i>
+                            </div>
+                            Predictive Insights
+                        </h5>
+                    </div>
+                    <div id="predictions">
+                        <!-- Predictions will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <h5 class="insight-title">
+                            <div class="insight-icon icon-blue">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            Quick Actions
+                        </h5>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="/daily-attendance" class="insight-action action-primary">
+                            <i class="fas fa-check-circle"></i>
+                            Mark Today's Attendance
+                        </a>
+                        <a href="/notifications/send-low-attendance" class="insight-action action-secondary">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Send Low Attendance Alerts
+                        </a>
+                        <a href="/weekly-reports" class="insight-action action-secondary">
+                            <i class="fas fa-envelope"></i>
+                            Send Weekly Reports
+                        </a>
+                        <a href="/manage/class/new" class="insight-action action-secondary">
+                            <i class="fas fa-plus"></i>
+                            Create New Class
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let trendsChart = null;
+        let performanceChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInsightsData();
+        });
+
+        // Load all insights data
+        async function loadInsightsData() {
+            try {
+                const response = await fetch('/api/teacher-insights');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateTopInsights(data.topInsights);
+                    updateLowAttendanceStudents(data.lowAttendanceStudents);
+                    updateTopPerformers(data.topPerformers);
+                    updatePredictions(data.predictions);
+                    updateTrendsChart(data.trendsData);
+                    updatePerformanceChart(data.performanceData);
+                }
+            } catch (error) {
+                console.error('Error loading insights data:', error);
+                showMessage('Error loading insights data', 'error');
+            }
+        }
+
+        // Update top insights
+        function updateTopInsights(insights) {
+            const container = document.getElementById('topInsights');
+            
+            container.innerHTML = `
+                <div class="top-insight-card">
+                    <p class="top-insight-value">${insights.averageAttendance || 0}%</p>
+                    <p class="top-insight-label">Average Attendance</p>
+                    <div class="top-insight-change">
+                        <i class="fas fa-${insights.attendanceChange >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
+                        ${Math.abs(insights.attendanceChange || 0)}% from last month
+                    </div>
+                </div>
+                <div class="top-insight-card" style="background: linear-gradient(135deg, var(--success-green), #047857);">
+                    <p class="top-insight-value">${insights.totalPresent || 0}</p>
+                    <p class="top-insight-label">Students Present Today</p>
+                    <div class="top-insight-change">
+                        <i class="fas fa-users"></i>
+                        Out of ${insights.totalStudents || 0} students
+                    </div>
+                </div>
+                <div class="top-insight-card" style="background: linear-gradient(135deg, var(--warning-orange), #ea580c);">
+                    <p class="top-insight-value">${insights.lowAttendanceCount || 0}</p>
+                    <p class="top-insight-label">Need Attention</p>
+                    <div class="top-insight-change">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Below 75% attendance
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update low attendance students
+        function updateLowAttendanceStudents(students) {
+            const container = document.getElementById('lowAttendanceStudents');
+            
+            if (!students || students.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                        <i class="fas fa-check-circle fa-3x mb-3" style="color: var(--success-green);"></i>
+                        <h6>Great job!</h6>
+                        <p>All students have good attendance rates</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <ul class="student-list">
+                    ${students.slice(0, 5).map(student => `
+                        <li class="student-item">
+                            <div class="student-avatar">
+                                ${student.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="student-info">
+                                <p class="student-name">${student.name}</p>
+                                <p class="student-details">${student.class_name} - ${student.section} • Roll: ${student.roll_number}</p>
+                            </div>
+                            <div class="student-metric">
+                                <div class="metric-value metric-danger">${student.attendance_rate}%</div>
+                                <div class="metric-label">${student.present_days}/${student.total_days} days</div>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
+                ${students.length > 5 ? `
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a href="/reports?filter=low-attendance" class="insight-action action-secondary">
+                            View All ${students.length} Students
+                        </a>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Update top performers
+        function updateTopPerformers(performers) {
+            const container = document.getElementById('topPerformers');
+            
+            if (!performers || performers.length === 0) {
+                container.innerHTML = `
+                    <li class="student-item">
+                        <div style="text-align: center; padding: 1rem; color: var(--gray-600);">
+                            <p>No performance data available yet</p>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+
+            container.innerHTML = performers.slice(0, 5).map((student, index) => `
+                <li class="student-item">
+                    <div class="student-avatar" style="background: ${index < 3 ? '#fbbf24' : 'var(--gray-200)'}; color: ${index < 3 ? 'white' : 'var(--gray-600)'};">
+                        ${index < 3 ? (index + 1) : student.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="student-info">
+                        <p class="student-name">${student.name}</p>
+                        <p class="student-details">${student.class_name} - ${student.section}</p>
+                    </div>
+                    <div class="student-metric">
+                        <div class="metric-value metric-good">${student.attendance_rate}%</div>
+                        <div class="metric-label">Perfect record</div>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // Update predictions
+        function updatePredictions(predictions) {
+            const container = document.getElementById('predictions');
+            
+            if (!predictions || predictions.length === 0) {
+                container.innerHTML = `
+                    <div class="prediction-item">
+                        <p class="prediction-title">Collecting data...</p>
+                        <p class="prediction-description">Predictive insights will appear as more attendance data is collected.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = predictions.map(prediction => `
+                <div class="prediction-item">
+                    <p class="prediction-title">${prediction.title}</p>
+                    <p class="prediction-description">${prediction.description}</p>
+                    <p class="prediction-confidence">Confidence: ${prediction.confidence}%</p>
+                </div>
+            `).join('');
+        }
+
+        // Update trends chart
+        function updateTrendsChart(data) {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+            
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels || [],
+                    datasets: [
+                        {
+                            label: 'Attendance Rate',
+                            data: data.attendanceRates || [],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update performance chart
+        function updatePerformanceChart(data) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.classNames || [],
+                    datasets: [{
+                        label: 'Attendance Rate',
+                        data: data.attendanceRates || [],
+                        backgroundColor: [
+                            '#059669',
+                            '#2563eb',
+                            '#d97706',
+                            '#dc2626',
+                            '#7c3aed'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 'alert-info';
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.container-fluid');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

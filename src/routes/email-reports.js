@@ -22,8 +22,8 @@ const createTransporter = () => {
   });
 };
 
-// Weekly reports dashboard
-router.get('/weekly-reports', requireAuth, async (req, res) => {
+// Parent reports dashboard - restructured from weekly reports
+router.get('/parent-reports', requireAuth, async (req, res) => {
   const teacherId = req.session.user.id;
   
   // Get all classes for this teacher
@@ -40,19 +40,236 @@ router.get('/weekly-reports', requireAuth, async (req, res) => {
   const recentReports = await all(`
     SELECT 
       er.*,
-      c.name as class_name
+      c.name as class_name,
+      s.name as student_name,
+      s.roll_no
     FROM email_reports er
     JOIN classes c ON er.class_id = c.id
+    JOIN students s ON er.student_id = s.id
     WHERE c.teacher_id = ?
     ORDER BY er.sent_at DESC
-    LIMIT 10
+    LIMIT 20
   `, [teacherId]);
 
-  res.render('weekly-reports', {
+  res.render('parent-reports', {
     classes,
     recentReports,
-    pageTitle: 'Weekly Email Reports'
+    pageTitle: 'Parent Reports'
   });
+});
+
+// Individual student report view
+router.get('/parent-reports/student/:id', requireAuth, async (req, res) => {
+  const studentId = parseInt(req.params.id);
+  const teacherId = req.session.user.id;
+
+  try {
+    // Get student details with parent info
+    const student = await all(`
+      SELECT 
+        s.*,
+        c.name as class_name,
+        c.section,
+        g.name as parent_name,
+        g.email as parent_email,
+        g.phone as parent_phone
+      FROM students s
+      JOIN classes c ON s.class_id = c.id
+      LEFT JOIN guardians g ON s.id = g.student_id
+      WHERE s.id = ? AND c.teacher_id = ?
+    `, [studentId, teacherId]);
+
+    if (student.length === 0) {
+      return res.status(404).render('error', { 
+        message: 'Student not found or access denied',
+        pageTitle: 'Error'
+      });
+    }
+
+    // Get attendance history for last 30 days
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+
+    const attendanceHistory = await all(`
+      SELECT date, status, note
+      FROM attendance
+      WHERE student_id = ? AND date >= ? AND date <= ?
+      ORDER BY date DESC
+    `, [studentId, startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)]);
+
+    // Get attendance statistics
+    const stats = await all(`
+      SELECT 
+        COUNT(*) as total_days,
+        SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present_days,
+        SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent_days,
+        SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late_days,
+        SUM(CASE WHEN status = 'excused' THEN 1 ELSE 0 END) as excused_days
+      FROM attendance
+      WHERE student_id = ? AND date >= ? AND date <= ?
+    `, [studentId, startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)]);
+
+    // Get email report history for this student
+    const emailHistory = await all(`
+      SELECT *
+      FROM email_reports
+      WHERE student_id = ?
+      ORDER BY sent_at DESC
+      LIMIT 10
+    `, [studentId]);
+
+    res.render('student-report', {
+      student: student[0],
+      attendanceHistory,
+      stats: stats[0],
+      emailHistory,
+      pageTitle: `${student[0].name} - Individual Report`
+    });
+
+  } catch (error) {
+    console.error('Error fetching student report:', error);
+    res.status(500).render('error', { 
+      message: 'Error loading student report',
+      pageTitle: 'Error'
+    });
+  }
+});
+
+// Send individual student report to parent
+router.post('/parent-reports/student/:id/send', requireAuth, async (req, res) => {
+  const studentId = parseInt(req.params.id);
+  const teacherId = req.session.user.id;
+
+  try {
+    // Verify teacher has access to this student
+    const student = await all(`
+      SELECT s.*, c.id as class_id
+      FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE s.id = ? AND c.teacher_id = ?
+    `, [studentId, teacherId]);
+
+    if (student.length === 0) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Generate individual report
+    const result = await generateIndividualReport(studentId, student[0].class_id);
+    
+    res.json({
+      success: true,
+      message: result.sent > 0 ? 'Report sent successfully' : 'No parent email found',
+      details: result
+    });
+
+  } catch (error) {
+    console.error('Error sending individual report:', error);
+    res.status(500).json({ 
+      error: 'Failed to send report',
+      message: error.message 
+    });
+  }
+});
+
+// Weekly reports page (backward compatibility)
+router.get('/weekly-reports', requireAuth, async (req, res) => {
+  const teacherId = req.session.user.id;
+  
+  try {
+    // Get all classes for this teacher
+    const classes = await all(`
+      SELECT c.*, COUNT(s.id) as student_count
+      FROM classes c 
+      LEFT JOIN students s ON c.id = s.class_id 
+      WHERE c.teacher_id = ? 
+      GROUP BY c.id
+      ORDER BY c.name
+    `, [teacherId]);
+
+    // Get recent email reports
+    const recentReports = await all(`
+      SELECT 
+        er.*,
+        c.name as class_name,
+        s.name as student_name,
+        s.roll_no
+      FROM email_reports er
+      JOIN classes c ON er.class_id = c.id
+      JOIN students s ON er.student_id = s.id
+      WHERE c.teacher_id = ?
+      ORDER BY er.sent_at DESC
+      LIMIT 20
+    `, [teacherId]);
+
+    res.render('weekly-reports', {
+      classes,
+      recentReports,
+      pageTitle: 'Weekly Reports'
+    });
+  } catch (error) {
+    console.error('Error loading weekly reports:', error);
+    req.session.flash = { message: 'Error loading weekly reports' };
+    res.redirect('/dashboard');
+  }
+});
+
+// Enhanced weekly report view
+router.get('/enhanced-weekly-report/:id', requireAuth, async (req, res) => {
+  const classId = parseInt(req.params.id);
+  const teacherId = req.session.user.id;
+  
+  try {
+    // Get class information
+    const classInfo = await all(`
+      SELECT c.*, t.name as teacher_name 
+      FROM classes c 
+      JOIN teachers t ON c.teacher_id = t.id 
+      WHERE c.id = ? AND c.teacher_id = ?
+    `, [classId, teacherId]);
+    
+    if (classInfo.length === 0) {
+      return res.status(404).send('Class not found');
+    }
+    
+    // Get week dates
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+    
+    // Get student attendance data for the week
+    const students = await all(`
+      SELECT 
+        s.id, s.name, s.roll_no,
+        COUNT(DISTINCT a.date) as total_classes,
+        COUNT(CASE WHEN a.status = 'present' THEN 1 END) as present_count,
+        COUNT(CASE WHEN a.status = 'absent' THEN 1 END) as absent_count,
+        ROUND(
+          (COUNT(CASE WHEN a.status = 'present' THEN 1 END) * 100.0) / 
+          NULLIF(COUNT(DISTINCT a.date), 0), 1
+        ) as attendance_percentage,
+        g.email as parent_email, g.phone as parent_phone
+      FROM students s
+      LEFT JOIN attendance a ON s.id = a.student_id 
+        AND a.date BETWEEN ? AND ?
+      LEFT JOIN guardians g ON s.id = g.student_id
+      WHERE s.class_id = ?
+      GROUP BY s.id, s.name, s.roll_no
+      ORDER BY s.roll_no
+    `, [startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0], classId]);
+    
+    res.render('enhanced-weekly-report', {
+      classInfo: classInfo[0],
+      students,
+      weekStart: startDate.toLocaleDateString(),
+      weekEnd: endDate.toLocaleDateString(),
+      pageTitle: 'Enhanced Weekly Report'
+    });
+    
+  } catch (error) {
+    console.error('Enhanced weekly report error:', error);
+    res.status(500).send('Error generating report');
+  }
 });
 
 // Generate and send weekly reports for a class
@@ -126,6 +343,100 @@ router.post('/send-all-weekly-reports', requireAuth, async (req, res) => {
     });
   }
 });
+
+// Generate individual report for a specific student
+async function generateIndividualReport(studentId, classId) {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - 7); // Last 7 days
+
+  const startDateStr = startDate.toISOString().slice(0, 10);
+  const endDateStr = endDate.toISOString().slice(0, 10);
+
+  // Get class information
+  const classInfo = await all(`
+    SELECT * FROM classes WHERE id = ?
+  `, [classId]);
+
+  if (classInfo.length === 0) {
+    throw new Error('Class not found');
+  }
+
+  // Get student with parent information
+  const studentData = await all(`
+    SELECT 
+      s.id,
+      s.name,
+      s.roll_no,
+      g.name as parent_name,
+      g.email as parent_email,
+      COUNT(a.id) as total_days,
+      SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) as present_days,
+      SUM(CASE WHEN a.status = 'absent' THEN 1 ELSE 0 END) as absent_days,
+      SUM(CASE WHEN a.status = 'late' THEN 1 ELSE 0 END) as late_days,
+      SUM(CASE WHEN a.status = 'excused' THEN 1 ELSE 0 END) as excused_days
+    FROM students s
+    LEFT JOIN guardians g ON s.id = g.student_id
+    LEFT JOIN attendance a ON s.id = a.student_id 
+      AND a.date >= ? AND a.date <= ?
+    WHERE s.id = ?
+    GROUP BY s.id, s.name, s.roll_no, g.name, g.email
+  `, [startDateStr, endDateStr, studentId]);
+
+  if (studentData.length === 0 || !studentData[0].parent_email) {
+    return { sent: 0, errors: 1, total: 1, message: 'No parent email found' };
+  }
+
+  const student = studentData[0];
+
+  try {
+    // Get daily attendance details
+    const dailyAttendance = await all(`
+      SELECT date, status, note
+      FROM attendance
+      WHERE student_id = ? AND date >= ? AND date <= ?
+      ORDER BY date
+    `, [studentId, startDateStr, endDateStr]);
+
+    // Calculate attendance percentage
+    const attendanceRate = student.total_days > 0 ? 
+      Math.round((student.present_days / student.total_days) * 100) : 0;
+
+    // Generate email content
+    const emailContent = generateEmailContent(
+      student, 
+      classInfo[0], 
+      dailyAttendance, 
+      attendanceRate,
+      startDateStr,
+      endDateStr
+    );
+
+    // Send email
+    if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+      const transporter = createTransporter();
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'AttendanceMS <no-reply@school.com>',
+        to: student.parent_email,
+        subject: `Individual Attendance Report - ${student.name} (${classInfo[0].name})`,
+        html: emailContent
+      });
+
+      // Log successful email
+      await logEmailReport(classId, studentId, 'sent', null);
+      return { sent: 1, errors: 0, total: 1 };
+    } else {
+      console.log(`Email would be sent to ${student.parent_email} for ${student.name}`);
+      await logEmailReport(classId, studentId, 'simulated', 'SMTP not configured');
+      return { sent: 1, errors: 0, total: 1 };
+    }
+
+  } catch (error) {
+    console.error(`Error sending email to ${student.parent_email}:`, error);
+    await logEmailReport(classId, studentId, 'failed', error.message);
+    return { sent: 0, errors: 1, total: 1 };
+  }
+}
 
 // Generate weekly reports for a specific class
 async function generateWeeklyReports(classId) {

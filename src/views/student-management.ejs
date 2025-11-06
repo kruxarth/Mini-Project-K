@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management - <%= brand %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .class-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .search-filter {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: white;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .students-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        }
+
+        .student-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .student-name {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .student-roll {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+        }
+
+        .status-inactive {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        .student-details {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            min-width: 100px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .student-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        .attendance-summary {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .attendance-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .stat-item {
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close {
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-grid-full {
+            grid-column: 1 / -1;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Student Management</h1>
+            <div class="class-info">
+                <h3><%= klass.name %> <%= klass.section ? '- ' + klass.section : '' %></h3>
+                <p><strong>Department:</strong> <%= klass.department || 'Not specified' %> | 
+                   <strong>Semester:</strong> <%= klass.semester || 'Not specified' %> | 
+                   <strong>Academic Year:</strong> <%= klass.academic_year || 'Current' %></p>
+            </div>
+        </div>
+
+        <div class="actions-bar">
+            <button class="btn btn-primary" onclick="openAddModal()">
+                ➕ Add New Student
+            </button>
+            <button class="btn btn-secondary" onclick="exportStudents()">
+                📊 Export Data
+            </button>
+            <button class="btn btn-warning" onclick="bulkImport()">
+                📥 Bulk Import
+            </button>
+            <a href="/dashboard" class="btn btn-secondary">
+                🏠 Back to Dashboard
+            </a>
+        </div>
+
+        <div class="search-filter">
+            <div class="search-row">
+                <div class="form-group">
+                    <label>Search Students</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search by name or roll number...">
+                </div>
+                <div class="form-group">
+                    <label>Filter by Status</label>
+                    <select class="form-control" id="statusFilter">
+                        <option value="">All Students</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="graduated">Graduated</option>
+                        <option value="transferred">Transferred</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sort By</label>
+                    <select class="form-control" id="sortBy">
+                        <option value="roll_no">Roll Number</option>
+                        <option value="name">Name</option>
+                        <option value="created_at">Date Added</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="applyFilters()">🔍 Filter</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="students-grid" id="studentsGrid">
+            <% if (students.length === 0) { %>
+                <div class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <h3>No Students Found</h3>
+                    <p>Start by adding your first student to this class.</p>
+                    <button class="btn btn-primary" onclick="openAddModal()">Add First Student</button>
+                </div>
+            <% } else { %>
+                <% students.forEach(student => { %>
+                    <div class="student-card" data-student-id="<%= student.id %>">
+                        <div class="student-header">
+                            <div>
+                                <div class="student-name"><%= student.name %></div>
+                                <div class="student-roll">Roll No: <%= student.roll_no || 'Not assigned' %></div>
+                            </div>
+                            <span class="status-badge status-<%= student.enrollment_status || 'active' %>">
+                                <%= (student.enrollment_status || 'active').toUpperCase() %>
+                            </span>
+                        </div>
+
+                        <div class="student-details">
+                            <% if (student.email) { %>
+                                <div class="detail-row">
+                                    <span class="detail-label">Email:</span>
+                                    <span><%= student.email %></span>
+                                </div>
+                            <% } %>
+                            <% if (student.phone) { %>
+                                <div class="detail-row">
+                                    <span class="detail-label">Phone:</span>
+                                    <span><%= student.phone %></span>
+                                </div>
+                            <% } %>
+                            <% if (student.guardian_name) { %>
+                                <div class="detail-row">
+                                    <span class="detail-label">Guardian:</span>
+                                    <span><%= student.guardian_name %></span>
+                                </div>
+                            <% } %>
+                            <% if (student.guardian_email) { %>
+                                <div class="detail-row">
+                                    <span class="detail-label">Guardian Email:</span>
+                                    <span><%= student.guardian_email %></span>
+                                </div>
+                            <% } %>
+                            <% if (student.notes) { %>
+                                <div class="detail-row">
+                                    <span class="detail-label">Notes:</span>
+                                    <span><%= student.notes %></span>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div class="attendance-summary">
+                            <h4 style="color: white; margin-bottom: 10px;">📊 Attendance Summary</h4>
+                            <div class="attendance-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number">85%</span>
+                                    <span class="stat-label">Overall</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">23</span>
+                                    <span class="stat-label">Present</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">4</span>
+                                    <span class="stat-label">Absent</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="student-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="editStudent(<%= student.id %>)">
+                                ✏️ Edit
+                            </button>
+                            <button class="btn btn-warning btn-sm" onclick="viewAttendance(<%= student.id %>)">
+                                📊 Attendance
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteStudent(<%= student.id %>, '<%= student.name %>')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add New Student</h2>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="studentForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Student Name *</label>
+                        <input type="text" class="form-control" id="studentName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Roll Number</label>
+                        <input type="text" class="form-control" id="rollNo">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="studentEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" class="form-control" id="studentPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" class="form-control" id="dateOfBirth">
+                    </div>
+                    <div class="form-group">
+                        <label>Enrollment Status</label>
+                        <select class="form-control" id="enrollmentStatus">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="graduated">Graduated</option>
+                            <option value="transferred">Transferred</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Academic Year</label>
+                        <input type="text" class="form-control" id="academicYear" placeholder="e.g., 2024-25">
+                    </div>
+                    <div class="form-group">
+                        <label>Branch/Department</label>
+                        <input type="text" class="form-control" id="branch" placeholder="e.g., Computer Science">
+                    </div>
+                    <div class="form-group form-grid-full">
+                        <label>Address</label>
+                        <input type="text" class="form-control" id="address">
+                    </div>
+                    <div class="form-group">
+                        <label>Guardian Name</label>
+                        <input type="text" class="form-control" id="guardianName">
+                    </div>
+                    <div class="form-group">
+                        <label>Guardian Email</label>
+                        <input type="email" class="form-control" id="guardianEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Guardian Phone</label>
+                        <input type="tel" class="form-control" id="guardianPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact</label>
+                        <input type="text" class="form-control" id="emergencyContact">
+                    </div>
+                    <div class="form-group form-grid-full">
+                        <label>Notes</label>
+                        <textarea class="form-control" id="notes" rows="3" placeholder="Any additional notes about the student..."></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/student-management.js"></script>
+</body>
+</html>
