@@ -32,6 +32,15 @@ function all(sql, params = []) {
   });
 }
 
+function get(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.get(sql, params, (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+}
+
 async function migrate() {
   await run(`PRAGMA foreign_keys = ON;`);
   
@@ -431,6 +440,11 @@ async function ensureDefaultTeacher(email, password) {
   }
 }
 
+// Helper function to get the database instance
+function getDB() {
+  return db;
+}
+
 const cmd = process.argv[2];
 if (cmd === 'init') {
   migrate().then(() => { console.log('DB migrated'); db.close(); }).catch(e => { console.error(e); db.close(); process.exit(1); });
@@ -438,4 +452,4 @@ if (cmd === 'init') {
   migrate().then(seed).then(() => { console.log('DB seeded'); db.close(); }).catch(e => { console.error(e); db.close(); process.exit(1); });
 }
 
-export { db, migrate, seed, all, run, dbPath, ensureDefaultTeacher };
+export { db, migrate, seed, all, run, get, dbPath, ensureDefaultTeacher, getDB };

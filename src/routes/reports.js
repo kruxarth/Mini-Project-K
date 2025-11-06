@@ -283,8 +283,6 @@ router.get('/reports/student/:id', requireAuth, async (req, res) => {
   res.render('report_student', { student, rows, from: from || '', to: to || '' });
 });
 
-export default router;
- 
 // Period-wise class report
 router.get('/reports/class/:id/periods', requireAuth, async (req, res) => {
   const classId = parseInt(req.params.id, 10);
@@ -362,3 +360,5 @@ router.get('/reports/class/:id/overview', requireAuth, async (req, res) => {
   }
   res.render('overview_class', { klass, rows: enhanced, from: from || '', to: to || '' });
 });
+
+export default router;
