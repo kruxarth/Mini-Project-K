@@ -197,6 +197,29 @@ async function migrate() {
     FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
   );`);
 
+  // Insert default subjects if none exist
+  const subjectCount = await get(`SELECT COUNT(*) as count FROM subjects`);
+  if (subjectCount.count === 0) {
+    // Get first teacher and class for default subjects
+    const firstTeacher = await get(`SELECT id FROM teachers LIMIT 1`);
+    const firstClass = await get(`SELECT id FROM classes LIMIT 1`);
+    
+    if (firstTeacher && firstClass) {
+      const defaultSubjects = [
+        { name: 'Mathematics', code: 'MATH' },
+        { name: 'English', code: 'ENG' },
+        { name: 'Science', code: 'SCI' },
+        { name: 'Social Studies', code: 'SS' },
+        { name: 'Computer Science', code: 'CS' }
+      ];
+
+      for (const subject of defaultSubjects) {
+        await run(`INSERT INTO subjects (name, code, class_id, teacher_id) VALUES (?, ?, ?, ?)`, 
+          [subject.name, subject.code, firstClass.id, firstTeacher.id]);
+      }
+    }
+  }
+
   await run(`CREATE TABLE IF NOT EXISTS students (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,

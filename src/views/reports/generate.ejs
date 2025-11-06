@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generate Reports - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .form-card { 
+      background: white; 
+      border-radius: 15px; 
+      padding: 30px; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08); 
+      margin-bottom: 20px;
+    }
+    .header-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 0;
+      margin-bottom: 30px;
+    }
+    .report-type-card {
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 15px;
+    }
+    .report-type-card:hover {
+      border-color: #007bff;
+      background-color: #f8f9ff;
+    }
+    .report-type-card.selected {
+      border-color: #007bff;
+      background-color: #e7f3ff;
+    }
+    .date-range-btn {
+      border: 1px solid #dee2e6;
+      background: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 2px;
+    }
+    .date-range-btn:hover {
+      background-color: #f8f9fa;
+      border-color: #007bff;
+    }
+    .date-range-btn.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .filter-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .preview-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="/logout" class="d-inline">
+                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="mb-2">
+            <i class="fas fa-chart-bar me-3"></i>Generate Reports
+          </h1>
+          <p class="mb-0 opacity-90">Create detailed attendance reports with custom filters</p>
+        </div>
+        <div class="col-md-4 text-end">
+          <a href="/dashboard" class="btn btn-light">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <% if (flash) { %>
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i><%= flash.message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="form-card">
+          <form id="reportForm" method="post" action="/reports/generate">
+            <!-- Report Type Selection -->
+            <div class="mb-4">
+              <h5 class="mb-3">
+                <i class="fas fa-file-alt me-2"></i>Report Type
+              </h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="report-type-card" data-type="class">
+                    <i class="fas fa-chalkboard fa-2x text-primary mb-2"></i>
+                    <h6>Class Report</h6>
+                    <small class="text-muted">Attendance for entire class</small>
+                    <input type="radio" name="report_type" value="class" class="d-none">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="report-type-card" data-type="student">
+                    <i class="fas fa-user-graduate fa-2x text-success mb-2"></i>
+                    <h6>Student Report</h6>
+                    <small class="text-muted">Individual student attendance</small>
+                    <input type="radio" name="report_type" value="student" class="d-none">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="report-type-card" data-type="summary">
+                    <i class="fas fa-chart-pie fa-2x text-warning mb-2"></i>
+                    <h6>Summary Report</h6>
+                    <small class="text-muted">Overall statistics</small>
+                    <input type="radio" name="report_type" value="summary" class="d-none">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Class Selection -->
+            <div class="mb-4">
+              <label for="class_id" class="form-label">
+                <i class="fas fa-chalkboard me-2"></i>Select Class
+              </label>
+              <select class="form-select" id="class_id" name="class_id" required>
+                <option value="">Choose a class...</option>
+                <% classes.forEach(classItem => { %>
+                  <option value="<%= classItem.id %>" 
+                          data-students="<%= classItem.student_count %>"
+                          data-section="<%= classItem.section || '' %>">
+                    <%= classItem.name %>
+                    <% if (classItem.section) { %> - Section <%= classItem.section %><% } %>
+                    (<%= classItem.student_count %> students)
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Date Range Selection -->
+            <div class="mb-4">
+              <h5 class="mb-3">
+                <i class="fas fa-calendar me-2"></i>Date Range / Period
+              </h5>
+              
+              <!-- Quick Date Range Buttons -->
+              <div class="mb-3">
+                <div class="d-flex flex-wrap gap-2">
+                  <button type="button" class="date-range-btn" data-range="current_week">
+                    <i class="fas fa-calendar-week me-1"></i>Current Week
+                  </button>
+                  <button type="button" class="date-range-btn" data-range="last_week">
+                    <i class="fas fa-calendar-week me-1"></i>Last Week
+                  </button>
+                  <button type="button" class="date-range-btn active" data-range="current_month">
+                    <i class="fas fa-calendar-alt me-1"></i>Current Month
+                  </button>
+                  <button type="button" class="date-range-btn" data-range="last_month">
+                    <i class="fas fa-calendar-alt me-1"></i>Last Month
+                  </button>
+                  <button type="button" class="date-range-btn" data-range="current_semester">
+                    <i class="fas fa-calendar me-1"></i>Current Semester
+                  </button>
+                  <button type="button" class="date-range-btn" data-range="custom">
+                    <i class="fas fa-calendar-plus me-1"></i>Custom Range
+                  </button>
+                </div>
+              </div>
+
+              <!-- Custom Date Range Inputs -->
+              <div class="row" id="customDateRange" style="display: none;">
+                <div class="col-md-6">
+                  <label for="start_date" class="form-label">Start Date</label>
+                  <input type="date" class="form-control" id="start_date" name="start_date">
+                </div>
+                <div class="col-md-6">
+                  <label for="end_date" class="form-label">End Date</label>
+                  <input type="date" class="form-control" id="end_date" name="end_date">
+                </div>
+              </div>
+
+              <!-- Hidden inputs for selected range -->
+              <input type="hidden" id="date_range_type" name="date_range_type" value="current_month">
+              <input type="hidden" id="calculated_start_date" name="calculated_start_date">
+              <input type="hidden" id="calculated_end_date" name="calculated_end_date">
+            </div>
+
+            <!-- Optional Filters -->
+            <div class="filter-section">
+              <h5 class="mb-3">
+                <i class="fas fa-filter me-2"></i>Optional Filters
+              </h5>
+              
+              <div class="row">
+                <div class="col-md-4">
+                  <label for="section_filter" class="form-label">Section</label>
+                  <select class="form-select" id="section_filter" name="section_filter">
+                    <option value="">All Sections</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-4">
+                  <label for="subject_filter" class="form-label">Subject</label>
+                  <select class="form-select" id="subject_filter" name="subject_filter">
+                    <option value="">All Subjects</option>
+                    <% subjects.forEach(subject => { %>
+                      <option value="<%= subject.id %>"><%= subject.name %></option>
+                    <% }) %>
+                  </select>
+                </div>
+                
+                <div class="col-md-4">
+                  <label for="period_filter" class="form-label">Period</label>
+                  <select class="form-select" id="period_filter" name="period_filter">
+                    <option value="">All Periods</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row mt-3">
+                <div class="col-md-6">
+                  <label for="attendance_threshold" class="form-label">
+                    Attendance Threshold (%)
+                    <i class="fas fa-info-circle" data-bs-toggle="tooltip" 
+                       title="Show only students below this attendance percentage"></i>
+                  </label>
+                  <input type="number" class="form-control" id="attendance_threshold" 
+                         name="attendance_threshold" min="0" max="100" placeholder="e.g., 75">
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="status_filter" class="form-label">Status Filter</label>
+                  <select class="form-select" id="status_filter" name="status_filter">
+                    <option value="">All Statuses</option>
+                    <option value="present">Present Only</option>
+                    <option value="absent">Absent Only</option>
+                    <option value="late">Late Only</option>
+                    <option value="excused">Excused Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Output Format -->
+            <div class="mb-4 mt-4">
+              <h5 class="mb-3">
+                <i class="fas fa-download me-2"></i>Output Format
+              </h5>
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="output_format" id="format_html" value="html" checked>
+                    <label class="form-check-label" for="format_html">
+                      <i class="fas fa-globe me-1"></i>Web View
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="output_format" id="format_pdf" value="pdf">
+                    <label class="form-check-label" for="format_pdf">
+                      <i class="fas fa-file-pdf me-1"></i>PDF
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="output_format" id="format_csv" value="csv">
+                    <label class="form-check-label" for="format_csv">
+                      <i class="fas fa-file-csv me-1"></i>CSV
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="output_format" id="format_excel" value="excel">
+                    <label class="form-check-label" for="format_excel">
+                      <i class="fas fa-file-excel me-1"></i>Excel
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button type="button" class="btn btn-outline-secondary me-md-2" onclick="previewReport()">
+                <i class="fas fa-eye me-2"></i>Preview
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-chart-bar me-2"></i>Generate Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <!-- Report Preview -->
+        <div class="form-card">
+          <h5 class="mb-3">
+            <i class="fas fa-eye me-2"></i>Report Preview
+          </h5>
+          <div id="reportPreview">
+            <div class="text-center text-muted py-4">
+              <i class="fas fa-chart-bar fa-3x mb-3"></i>
+              <p>Select options to preview your report</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="form-card">
+          <h5 class="mb-3">
+            <i class="fas fa-info-circle me-2"></i>Quick Info
+          </h5>
+          <div id="quickStats">
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="h4 text-primary mb-1"><%= classes.length %></div>
+                <small class="text-muted">Total Classes</small>
+              </div>
+              <div class="col-6">
+                <div class="h4 text-success mb-1"><%= totalStudents %></div>
+                <small class="text-muted">Total Students</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Reports -->
+        <div class="form-card">
+          <h5 class="mb-3">
+            <i class="fas fa-history me-2"></i>Recent Reports
+          </h5>
+          <div class="list-group list-group-flush">
+            <% if (recentReports && recentReports.length > 0) { %>
+              <% recentReports.slice(0, 5).forEach(report => { %>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="fw-bold"><%= report.class_name %></div>
+                    <small class="text-muted"><%= report.date_range %></small>
+                  </div>
+                  <small class="text-muted"><%= report.created_at %></small>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="text-center text-muted py-3">
+                <i class="fas fa-file-alt fa-2x mb-2"></i>
+                <p class="mb-0">No recent reports</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    class ReportGenerator {
+      constructor() {
+        this.init();
+      }
+
+      init() {
+        this.setupEventListeners();
+        this.setDefaultDates();
+        this.updatePreview();
+      }
+
+      setupEventListeners() {
+        // Report type selection
+        document.querySelectorAll('.report-type-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            document.querySelectorAll('.report-type-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            card.querySelector('input[type="radio"]').checked = true;
+            this.updatePreview();
+          });
+        });
+
+        // Date range buttons
+        document.querySelectorAll('.date-range-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.date-range-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const range = btn.dataset.range;
+            document.getElementById('date_range_type').value = range;
+            
+            if (range === 'custom') {
+              document.getElementById('customDateRange').style.display = 'block';
+            } else {
+              document.getElementById('customDateRange').style.display = 'none';
+              this.setDateRange(range);
+            }
+            this.updatePreview();
+          });
+        });
+
+        // Class selection change
+        document.getElementById('class_id').addEventListener('change', (e) => {
+          this.loadClassDetails(e.target.value);
+          this.updatePreview();
+        });
+
+        // Form inputs change
+        document.querySelectorAll('#reportForm input, #reportForm select').forEach(input => {
+          input.addEventListener('change', () => {
+            this.updatePreview();
+          });
+        });
+      }
+
+      setDefaultDates() {
+        this.setDateRange('current_month');
+      }
+
+      setDateRange(range) {
+        const now = new Date();
+        let startDate, endDate;
+
+        switch (range) {
+          case 'current_week':
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            startDate = startOfWeek;
+            endDate = endOfWeek;
+            break;
+
+          case 'last_week':
+            const lastWeekStart = new Date(now);
+            lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
+            const lastWeekEnd = new Date(lastWeekStart);
+            lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+            startDate = lastWeekStart;
+            endDate = lastWeekEnd;
+            break;
+
+          case 'current_month':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            break;
+
+          case 'last_month':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+            break;
+
+          case 'current_semester':
+            // Assuming semester starts in July and January
+            const month = now.getMonth();
+            if (month >= 6) { // July onwards
+              startDate = new Date(now.getFullYear(), 6, 1); // July 1st
+              endDate = new Date(now.getFullYear(), 11, 31); // December 31st
+            } else {
+              startDate = new Date(now.getFullYear(), 0, 1); // January 1st
+              endDate = new Date(now.getFullYear(), 5, 30); // June 30th
+            }
+            break;
+
+          default:
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        }
+
+        document.getElementById('calculated_start_date').value = startDate.toISOString().split('T')[0];
+        document.getElementById('calculated_end_date').value = endDate.toISOString().split('T')[0];
+      }
+
+      async loadClassDetails(classId) {
+        if (!classId) return;
+
+        try {
+          const response = await fetch(`/api/class/${classId}/details`);
+          const data = await response.json();
+
+          if (data.success) {
+            // Update section filter
+            const sectionFilter = document.getElementById('section_filter');
+            sectionFilter.innerHTML = '<option value="">All Sections</option>';
+            if (data.sections && data.sections.length > 0) {
+              data.sections.forEach(section => {
+                sectionFilter.innerHTML += `<option value="${section}">${section}</option>`;
+              });
+            }
+
+            // Update period filter
+            const periodFilter = document.getElementById('period_filter');
+            periodFilter.innerHTML = '<option value="">All Periods</option>';
+            if (data.periods && data.periods.length > 0) {
+              data.periods.forEach(period => {
+                periodFilter.innerHTML += `<option value="${period.id}">${period.name}</option>`;
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error loading class details:', error);
+        }
+      }
+
+      updatePreview() {
+        const formData = new FormData(document.getElementById('reportForm'));
+        const reportType = formData.get('report_type');
+        const classId = formData.get('class_id');
+        const dateRangeType = formData.get('date_range_type');
+        const outputFormat = formData.get('output_format');
+
+        const preview = document.getElementById('reportPreview');
+        
+        if (!reportType || !classId) {
+          preview.innerHTML = `
+            <div class="text-center text-muted py-4">
+              <i class="fas fa-chart-bar fa-3x mb-3"></i>
+              <p>Select report type and class to preview</p>
+            </div>
+          `;
+          return;
+        }
+
+        const selectedClass = document.querySelector(`#class_id option[value="${classId}"]`);
+        const className = selectedClass ? selectedClass.textContent : 'Selected Class';
+
+        preview.innerHTML = `
+          <div class="preview-content">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fas fa-file-alt fa-2x text-primary me-3"></i>
+              <div>
+                <h6 class="mb-0">${this.getReportTypeLabel(reportType)}</h6>
+                <small class="text-muted">${className}</small>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <strong>Period:</strong> ${this.getDateRangeLabel(dateRangeType)}
+            </div>
+            
+            <div class="mb-3">
+              <strong>Format:</strong> ${outputFormat.toUpperCase()}
+            </div>
+            
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <small>Click "Generate Report" to create your report</small>
+            </div>
+          </div>
+        `;
+      }
+
+      getReportTypeLabel(type) {
+        const labels = {
+          'class': 'Class Report',
+          'student': 'Student Report',
+          'summary': 'Summary Report'
+        };
+        return labels[type] || 'Report';
+      }
+
+      getDateRangeLabel(range) {
+        const labels = {
+          'current_week': 'Current Week',
+          'last_week': 'Last Week',
+          'current_month': 'Current Month',
+          'last_month': 'Last Month',
+          'current_semester': 'Current Semester',
+          'custom': 'Custom Range'
+        };
+        return labels[range] || 'Selected Period';
+      }
+    }
+
+    // Global functions
+    function previewReport() {
+      // This would show a modal with report preview
+      alert('Preview functionality will show a modal with report preview');
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      window.reportGenerator = new ReportGenerator();
+      
+      // Initialize tooltips
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+    });
+  </script>
+</body>
+</html>

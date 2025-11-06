@@ -1,5 +1,5 @@
 import express from 'express';
-import { all } from '../db.js';
+import { all, getDB } from '../db.js';
 
 const router = express.Router();
 
@@ -45,6 +45,221 @@ router.get('/reports/class/:id', requireAuth, async (req, res) => {
     return sendCsv(res, `class-${classId}-report.csv`, ['date','roll_no','student_name','status'], rows);
   }
   res.render('report_class', { klass, rows, from: from || '', to: to || '' });
+});
+
+// Enhanced reports generation page
+router.get('/reports', requireAuth, async (req, res) => {
+  try {
+    const db = getDB();
+    const teacherId = req.session.user.id;
+
+    // Get all classes for this teacher
+    const classes = await db.all(`
+      SELECT c.*, COUNT(s.id) as student_count
+      FROM classes c 
+      LEFT JOIN students s ON c.id = s.class_id 
+      WHERE c.teacher_id = ? 
+      GROUP BY c.id
+      ORDER BY c.name
+    `, [teacherId]);
+
+    // Get all subjects
+    const subjects = await db.all(`
+      SELECT DISTINCT id, name FROM subjects ORDER BY name
+    `);
+
+    // Get total students count
+    const totalStudentsResult = await db.get(`
+      SELECT COUNT(s.id) as total
+      FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = ?
+    `, [teacherId]);
+
+    // Get recent reports (mock data for now)
+    const recentReports = []; // This would come from a reports history table
+
+    res.render('reports/generate', {
+      title: 'Generate Reports',
+      classes,
+      subjects,
+      totalStudents: totalStudentsResult?.total || 0,
+      recentReports,
+      currentPage: 'reports'
+    });
+  } catch (error) {
+    console.error('Error loading reports page:', error);
+    req.session.flash = { message: 'Error loading reports page' };
+    res.redirect('/dashboard');
+  }
+});
+
+// Process report generation
+router.post('/reports/generate', requireAuth, async (req, res) => {
+  try {
+    const db = getDB();
+    const teacherId = req.session.user.id;
+    const {
+      report_type,
+      class_id,
+      date_range_type,
+      calculated_start_date,
+      calculated_end_date,
+      start_date,
+      end_date,
+      section_filter,
+      subject_filter,
+      period_filter,
+      attendance_threshold,
+      status_filter,
+      output_format
+    } = req.body;
+
+    // Determine actual date range
+    let startDate = calculated_start_date;
+    let endDate = calculated_end_date;
+    
+    if (date_range_type === 'custom') {
+      startDate = start_date;
+      endDate = end_date;
+    }
+
+    // Build the query based on report type and filters
+    let query = '';
+    let params = [];
+
+    if (report_type === 'class') {
+      query = `
+        SELECT 
+          a.date,
+          s.id as student_id,
+          s.name as student_name,
+          s.roll_number,
+          a.status,
+          a.remarks,
+          c.name as class_name,
+          c.section
+        FROM attendance a
+        JOIN students s ON s.id = a.student_id
+        JOIN classes c ON c.id = s.class_id
+        WHERE c.id = ? AND c.teacher_id = ?
+          AND DATE(a.date) >= DATE(?)
+          AND DATE(a.date) <= DATE(?)
+      `;
+      params = [class_id, teacherId, startDate, endDate];
+
+      // Add optional filters
+      if (status_filter) {
+        query += ' AND a.status = ?';
+        params.push(status_filter);
+      }
+
+      if (section_filter) {
+        query += ' AND c.section = ?';
+        params.push(section_filter);
+      }
+
+      query += ' ORDER BY a.date DESC, s.roll_number';
+    }
+
+    const reportData = await db.all(query, params);
+
+    // Get class information
+    const classInfo = await db.get(`
+      SELECT * FROM classes WHERE id = ? AND teacher_id = ?
+    `, [class_id, teacherId]);
+
+    // Calculate summary statistics
+    const summary = await db.get(`
+      SELECT 
+        COUNT(DISTINCT a.date) as total_days,
+        COUNT(CASE WHEN a.status = 'present' THEN 1 END) as total_present,
+        COUNT(CASE WHEN a.status = 'absent' THEN 1 END) as total_absent,
+        COUNT(CASE WHEN a.status = 'late' THEN 1 END) as total_late,
+        COUNT(CASE WHEN a.status = 'excused' THEN 1 END) as total_excused,
+        COUNT(DISTINCT s.id) as total_students
+      FROM attendance a
+      JOIN students s ON s.id = a.student_id
+      JOIN classes c ON c.id = s.class_id
+      WHERE c.id = ? AND c.teacher_id = ?
+        AND DATE(a.date) >= DATE(?)
+        AND DATE(a.date) <= DATE(?)
+    `, [class_id, teacherId, startDate, endDate]);
+
+    // Handle different output formats
+    if (output_format === 'csv') {
+      return sendCsv(res, `${classInfo.name}-report.csv`, 
+        ['date', 'student_name', 'roll_number', 'status', 'remarks'], 
+        reportData);
+    }
+
+    // For HTML output, render the report page
+    res.render('reports/view', {
+      title: `${classInfo.name} - Attendance Report`,
+      reportType: report_type,
+      classInfo,
+      reportData,
+      summary,
+      dateRange: {
+        start: startDate,
+        end: endDate,
+        type: date_range_type
+      },
+      filters: {
+        section: section_filter,
+        subject: subject_filter,
+        period: period_filter,
+        threshold: attendance_threshold,
+        status: status_filter
+      },
+      currentPage: 'reports'
+    });
+
+  } catch (error) {
+    console.error('Error generating report:', error);
+    req.session.flash = { message: 'Error generating report' };
+    res.redirect('/reports');
+  }
+});
+
+// API endpoint to get class details
+router.get('/api/class/:id/details', requireAuth, async (req, res) => {
+  try {
+    const db = getDB();
+    const classId = req.params.id;
+    const teacherId = req.session.user.id;
+
+    // Verify class belongs to teacher
+    const classInfo = await db.get(`
+      SELECT * FROM classes WHERE id = ? AND teacher_id = ?
+    `, [classId, teacherId]);
+
+    if (!classInfo) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    // Get unique sections for this class (if any)
+    const sections = await db.all(`
+      SELECT DISTINCT section FROM classes 
+      WHERE teacher_id = ? AND section IS NOT NULL AND section != ''
+      ORDER BY section
+    `, [teacherId]);
+
+    // Get periods for this class
+    const periods = await db.all(`
+      SELECT * FROM periods WHERE class_id = ? ORDER BY name
+    `, [classId]);
+
+    res.json({
+      success: true,
+      classInfo,
+      sections: sections.map(s => s.section),
+      periods
+    });
+  } catch (error) {
+    console.error('Error fetching class details:', error);
+    res.status(500).json({ error: 'Error fetching class details' });
+  }
 });
 
 router.get('/reports/student/:id', requireAuth, async (req, res) => {
