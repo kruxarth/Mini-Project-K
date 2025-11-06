@@ -1,5 +1,5 @@
 import express from 'express';
-import { all, run } from '../db.js';
+import { all, run, getDB } from '../db.js';
 
 const router = express.Router();
 
@@ -8,46 +8,195 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// Daily attendance dashboard
+// Enhanced daily attendance dashboard
 router.get('/daily-attendance', requireAuth, async (req, res) => {
   const teacherId = req.session.user.id;
-  const today = new Date().toISOString().slice(0, 10);
   
-  // Get filter parameters
-  const selectedYear = req.query.year || '';
-  const selectedBranch = req.query.branch || '';
-  
-  // Get all unique academic years and branches for this teacher
-  const academicYears = await all(`
-    SELECT DISTINCT academic_year 
-    FROM classes 
-    WHERE teacher_id = ? AND academic_year IS NOT NULL
-    ORDER BY academic_year DESC
-  `, [teacherId]);
-  
-  const branches = await all(`
-    SELECT DISTINCT department 
-    FROM classes 
-    WHERE teacher_id = ? AND department IS NOT NULL
-    ORDER BY department
-  `, [teacherId]);
-  
-  // Build filter conditions
-  let whereConditions = ['c.teacher_id = ?'];
-  let queryParams = [teacherId];
-  
-  if (selectedYear) {
-    whereConditions.push('c.academic_year = ?');
-    queryParams.push(selectedYear);
+  try {
+    // Get all classes for this teacher
+    const classes = await all(`
+      SELECT c.*, COUNT(s.id) as student_count
+      FROM classes c 
+      LEFT JOIN students s ON c.id = s.class_id 
+      WHERE c.teacher_id = ? 
+      GROUP BY c.id
+      ORDER BY c.name
+    `, [teacherId]);
+
+    // Get all subjects
+    const subjects = await all(`
+      SELECT DISTINCT id, name FROM subjects ORDER BY name
+    `);
+
+    res.render('daily-attendance-enhanced', {
+      title: 'Daily Attendance',
+      classes,
+      subjects,
+      currentPage: 'daily-attendance'
+    });
+  } catch (error) {
+    console.error('Error loading daily attendance:', error);
+    req.session.flash = { message: 'Error loading daily attendance page' };
+    res.redirect('/dashboard');
   }
-  
-  if (selectedBranch) {
-    whereConditions.push('c.department = ?');
-    queryParams.push(selectedBranch);
+});
+
+// API endpoint to get class students
+router.get('/api/class/:id/students', requireAuth, async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const teacherId = req.session.user.id;
+
+    // Verify class belongs to teacher
+    const classInfo = await all(`
+      SELECT * FROM classes WHERE id = ? AND teacher_id = ?
+    `, [classId, teacherId]);
+
+    if (classInfo.length === 0) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    // Get students for this class
+    const students = await all(`
+      SELECT id, name, roll_number, parent_email, parent_phone
+      FROM students 
+      WHERE class_id = ?
+      ORDER BY roll_number, name
+    `, [classId]);
+
+    res.json({
+      success: true,
+      students
+    });
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    res.status(500).json({ error: 'Error fetching students' });
   }
-  
-  // Get filtered classes for this teacher
-  const classes = await all(`
+});
+
+// API endpoint to check existing attendance
+router.get('/api/attendance/check', requireAuth, async (req, res) => {
+  try {
+    const { class_id, date } = req.query;
+    const teacherId = req.session.user.id;
+
+    // Check if attendance exists for this class and date
+    const existingAttendance = await all(`
+      SELECT a.*, COUNT(*) as record_count,
+             MIN(a.start_time) as start_time,
+             MAX(a.end_time) as end_time,
+             a.session_type
+      FROM attendance a
+      JOIN students s ON a.student_id = s.id
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.id = ? AND c.teacher_id = ? AND DATE(a.date) = DATE(?)
+      GROUP BY DATE(a.date), a.session_type
+      LIMIT 1
+    `, [class_id, teacherId, date]);
+
+    res.json({
+      exists: existingAttendance.length > 0,
+      attendance: existingAttendance[0] || null
+    });
+  } catch (error) {
+    console.error('Error checking attendance:', error);
+    res.status(500).json({ error: 'Error checking attendance' });
+  }
+});
+
+// API endpoint to save attendance
+router.post('/api/attendance/save', requireAuth, async (req, res) => {
+  try {
+    const { class_id, attendance } = req.body;
+    const teacherId = req.session.user.id;
+
+    // Verify class belongs to teacher
+    const classInfo = await all(`
+      SELECT * FROM classes WHERE id = ? AND teacher_id = ?
+    `, [class_id, teacherId]);
+
+    if (classInfo.length === 0) {
+      return res.status(403).json({ error: 'Unauthorized access to class' });
+    }
+
+    // Validation
+    if (!attendance || attendance.length === 0) {
+      return res.status(400).json({ error: 'No attendance data provided' });
+    }
+
+    // Check for duplicates within the same request
+    const studentIds = attendance.map(record => record.student_id);
+    const uniqueStudentIds = [...new Set(studentIds)];
+    
+    if (studentIds.length !== uniqueStudentIds.length) {
+      return res.status(400).json({ error: 'Duplicate student entries detected' });
+    }
+
+    // Validate timing
+    const firstRecord = attendance[0];
+    if (firstRecord.start_time && firstRecord.end_time && firstRecord.start_time >= firstRecord.end_time) {
+      return res.status(400).json({ error: 'End time must be after start time' });
+    }
+
+    // Check for existing attendance on the same date and session
+    const existingCount = await all(`
+      SELECT COUNT(*) as count
+      FROM attendance a
+      JOIN students s ON a.student_id = s.id
+      WHERE s.class_id = ? AND DATE(a.date) = DATE(?) AND a.session_type = ?
+    `, [class_id, firstRecord.date, firstRecord.session_type]);
+
+    if (existingCount[0].count > 0) {
+      return res.status(409).json({ 
+        error: 'Attendance already exists for this date and session',
+        code: 'DUPLICATE_SESSION'
+      });
+    }
+
+    // Save attendance records
+    const insertPromises = attendance.map(record => {
+      return run(`
+        INSERT INTO attendance (student_id, class_id, date, status, remarks, start_time, end_time, session_type, subject_id, session_time, marked_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        record.student_id,
+        class_id,
+        record.date,
+        record.status,
+        record.remarks,
+        record.start_time,
+        record.end_time,
+        record.session_type,
+        record.subject_id,
+        record.start_time, // session_time for backward compatibility
+        teacherId
+      ]);
+    });
+
+    await Promise.all(insertPromises);
+
+    // Create success alert
+    const AlertService = (await import('../services/alert-service.js')).default;
+    const presentCount = attendance.filter(r => r.status === 'present').length;
+    const totalCount = attendance.length;
+    const className = classInfo[0].name;
+    
+    await AlertService.alertAttendanceMarked(teacherId, className, presentCount, totalCount);
+
+    res.json({
+      success: true,
+      message: 'Attendance saved successfully',
+      records_saved: attendance.length
+    });
+
+  } catch (error) {
+    console.error('Error saving attendance:', error);
+    res.status(500).json({ error: 'Error saving attendance' });
+  }
+});
+
+// Get old classes query for backward compatibility
+const oldClasses = await all(`
     SELECT c.*, COUNT(s.id) as student_count
     FROM classes c 
     LEFT JOIN students s ON c.id = s.class_id 

@@ -259,11 +259,38 @@ async function migrate() {
     note TEXT,
     marked_at TEXT DEFAULT (datetime('now')),
     marked_by INTEGER,
+    start_time TEXT,
+    end_time TEXT,
+    session_type TEXT DEFAULT 'morning',
+    subject_id INTEGER,
+    remarks TEXT,
     UNIQUE(date, session_time, student_id),
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (marked_by) REFERENCES teachers(id)
+    FOREIGN KEY (marked_by) REFERENCES teachers(id),
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE SET NULL
   );`);
+
+  // Add new columns to existing attendance table if they don't exist
+  try {
+    await run(`ALTER TABLE attendance ADD COLUMN start_time TEXT`);
+  } catch (e) { /* Column might already exist */ }
+  
+  try {
+    await run(`ALTER TABLE attendance ADD COLUMN end_time TEXT`);
+  } catch (e) { /* Column might already exist */ }
+  
+  try {
+    await run(`ALTER TABLE attendance ADD COLUMN session_type TEXT DEFAULT 'morning'`);
+  } catch (e) { /* Column might already exist */ }
+  
+  try {
+    await run(`ALTER TABLE attendance ADD COLUMN subject_id INTEGER`);
+  } catch (e) { /* Column might already exist */ }
+  
+  try {
+    await run(`ALTER TABLE attendance ADD COLUMN remarks TEXT`);
+  } catch (e) { /* Column might already exist */ }
 
   await run(`CREATE TABLE IF NOT EXISTS notification_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
