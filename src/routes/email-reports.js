@@ -172,46 +172,9 @@ router.post('/parent-reports/student/:id/send', requireAuth, async (req, res) =>
   }
 });
 
-// Weekly reports page (backward compatibility)
+// Weekly reports page (redirect to parent reports)
 router.get('/weekly-reports', requireAuth, async (req, res) => {
-  const teacherId = req.session.user.id;
-  
-  try {
-    // Get all classes for this teacher
-    const classes = await all(`
-      SELECT c.*, COUNT(s.id) as student_count
-      FROM classes c 
-      LEFT JOIN students s ON c.id = s.class_id 
-      WHERE c.teacher_id = ? 
-      GROUP BY c.id
-      ORDER BY c.name
-    `, [teacherId]);
-
-    // Get recent email reports
-    const recentReports = await all(`
-      SELECT 
-        er.*,
-        c.name as class_name,
-        s.name as student_name,
-        s.roll_no
-      FROM email_reports er
-      JOIN classes c ON er.class_id = c.id
-      JOIN students s ON er.student_id = s.id
-      WHERE c.teacher_id = ?
-      ORDER BY er.sent_at DESC
-      LIMIT 20
-    `, [teacherId]);
-
-    res.render('weekly-reports', {
-      classes,
-      recentReports,
-      pageTitle: 'Weekly Reports'
-    });
-  } catch (error) {
-    console.error('Error loading weekly reports:', error);
-    req.session.flash = { message: 'Error loading weekly reports' };
-    res.redirect('/dashboard');
-  }
+  res.redirect('/parent-reports');
 });
 
 // Enhanced weekly report view

@@ -20,6 +20,7 @@ import bulkImportRouter from './routes/bulk-import.js';
 import analyticsRouter from './routes/analytics.js';
 import profileRouter from './routes/profile.js';
 import helpRouter from './routes/help.js';
+import parentReportsRouter from './routes/parent-reports.js';
 
 dotenv.config();
 
@@ -83,6 +84,7 @@ app.use('/', bulkImportRouter);
 app.use('/', analyticsRouter);
 app.use('/', profileRouter);
 app.use('/', helpRouter);
+app.use('/', parentReportsRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ ok: true });
