@@ -21,6 +21,7 @@ import analyticsRouter from './routes/analytics.js';
 import profileRouter from './routes/profile.js';
 import helpRouter from './routes/help.js';
 import parentReportsRouter from './routes/parent-reports.js';
+import notificationsRouter from './routes/notifications.js';
 
 dotenv.config();
 
@@ -85,6 +86,7 @@ app.use('/', analyticsRouter);
 app.use('/', profileRouter);
 app.use('/', helpRouter);
 app.use('/', parentReportsRouter);
+app.use('/', notificationsRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ ok: true });
@@ -113,6 +115,10 @@ migrate()
     // Initialize audit table
     const { initializeAuditTable } = await import('./middleware/audit.js');
     await initializeAuditTable();
+    
+    // Initialize notification scheduler
+    const NotificationScheduler = await import('./services/notification-scheduler.js');
+    NotificationScheduler.default.init();
     
     console.log('Database initialized successfully');
   })

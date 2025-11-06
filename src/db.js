@@ -252,6 +252,32 @@ async function migrate() {
     error TEXT,
     FOREIGN KEY (attendance_id) REFERENCES attendance(id) ON DELETE CASCADE
   );`);
+
+  // Notifications service log table
+  await run(`CREATE TABLE IF NOT EXISTS notifications_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    recipient TEXT NOT NULL,
+    content TEXT NOT NULL,
+    student_name TEXT,
+    status TEXT NOT NULL,
+    error_message TEXT,
+    created_at TEXT NOT NULL
+  );`);
+
+  // Notification settings table
+  await run(`CREATE TABLE IF NOT EXISTS notification_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    teacher_id INTEGER NOT NULL,
+    absence_notifications BOOLEAN DEFAULT 1,
+    low_attendance_alerts BOOLEAN DEFAULT 1,
+    weekly_reports BOOLEAN DEFAULT 1,
+    monthly_reports BOOLEAN DEFAULT 1,
+    low_attendance_threshold INTEGER DEFAULT 75,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
+  );`);
 }
 
 async function seed() {

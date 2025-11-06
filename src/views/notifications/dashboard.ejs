@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stats-card { 
+      background: white; 
+      border-radius: 15px; 
+      padding: 25px; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08); 
+      margin-bottom: 20px;
+      transition: transform 0.3s;
+    }
+    .stats-card:hover { transform: translateY(-3px); }
+    .header-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 0;
+      margin-bottom: 30px;
+    }
+    .notification-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid #007bff;
+    }
+    .notification-item.failed {
+      border-left-color: #dc3545;
+    }
+    .notification-item.sent {
+      border-left-color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="/logout" class="d-inline">
+                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="mb-2">
+            <i class="fas fa-bell me-3"></i>Notifications Dashboard
+          </h1>
+          <p class="mb-0 opacity-90">Manage automated notifications and messaging</p>
+        </div>
+        <div class="col-md-4 text-end">
+          <a href="/notifications/send-message" class="btn btn-warning me-2">
+            <i class="fas fa-paper-plane me-2"></i>Send Message
+          </a>
+          <a href="/dashboard" class="btn btn-light">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <% if (flash) { %>
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i><%= flash.message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card text-center">
+          <div class="h2 text-primary mb-2"><%= stats.total %></div>
+          <div class="text-muted">Total Notifications</div>
+          <small class="text-muted">Last 30 days</small>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card text-center">
+          <div class="h2 text-success mb-2"><%= stats.sent %></div>
+          <div class="text-muted">Successfully Sent</div>
+          <small class="text-muted">
+            <%= stats.total > 0 ? Math.round((stats.sent / stats.total) * 100) : 0 %>% success rate
+          </small>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card text-center">
+          <div class="h2 text-info mb-2"><%= stats.email_count %></div>
+          <div class="text-muted">Email Notifications</div>
+          <small class="text-muted">Last 30 days</small>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card text-center">
+          <div class="h2 text-warning mb-2"><%= stats.sms_count %></div>
+          <div class="text-muted">SMS Notifications</div>
+          <small class="text-muted">Last 30 days</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Settings Panel -->
+      <div class="col-md-6">
+        <div class="stats-card">
+          <h5 class="mb-3">
+            <i class="fas fa-cog me-2"></i>Notification Settings
+          </h5>
+          <form method="post" action="/notifications/settings">
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="absence_notifications" 
+                       name="absence_notifications" <%= settings.absence_notifications ? 'checked' : '' %>>
+                <label class="form-check-label" for="absence_notifications">
+                  <strong>Absence Notifications</strong><br>
+                  <small class="text-muted">Notify parents when student is absent</small>
+                </label>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="low_attendance_alerts" 
+                       name="low_attendance_alerts" <%= settings.low_attendance_alerts ? 'checked' : '' %>>
+                <label class="form-check-label" for="low_attendance_alerts">
+                  <strong>Low Attendance Alerts</strong><br>
+                  <small class="text-muted">Alert parents when attendance drops below threshold</small>
+                </label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="low_attendance_threshold" class="form-label">Low Attendance Threshold (%)</label>
+              <input type="number" class="form-control" id="low_attendance_threshold" 
+                     name="low_attendance_threshold" value="<%= settings.low_attendance_threshold %>" 
+                     min="1" max="100">
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="weekly_reports" 
+                       name="weekly_reports" <%= settings.weekly_reports ? 'checked' : '' %>>
+                <label class="form-check-label" for="weekly_reports">
+                  <strong>Weekly Reports</strong><br>
+                  <small class="text-muted">Send weekly attendance reports to parents</small>
+                </label>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="monthly_reports" 
+                       name="monthly_reports" <%= settings.monthly_reports ? 'checked' : '' %>>
+                <label class="form-check-label" for="monthly_reports">
+                  <strong>Monthly Reports</strong><br>
+                  <small class="text-muted">Send monthly attendance reports to parents</small>
+                </label>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-2"></i>Save Settings
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Test Notifications -->
+      <div class="col-md-6">
+        <div class="stats-card">
+          <h5 class="mb-3">
+            <i class="fas fa-vial me-2"></i>Test Notifications
+          </h5>
+          <div class="mb-3">
+            <label for="test_email" class="form-label">Test Email</label>
+            <div class="input-group">
+              <input type="email" class="form-control" id="test_email" placeholder="Enter email address">
+              <button class="btn btn-outline-primary" onclick="testNotification('email')">
+                <i class="fas fa-envelope me-1"></i>Test
+              </button>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="test_phone" class="form-label">Test SMS</label>
+            <div class="input-group">
+              <input type="tel" class="form-control" id="test_phone" placeholder="Enter phone number">
+              <button class="btn btn-outline-success" onclick="testNotification('sms')">
+                <i class="fas fa-sms me-1"></i>Test
+              </button>
+            </div>
+          </div>
+
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Configuration Required:</strong><br>
+            <small>
+              • Email: Set EMAIL_USER and EMAIL_PASS in environment<br>
+              • SMS: Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Notifications -->
+    <div class="stats-card">
+      <h5 class="mb-3">
+        <i class="fas fa-history me-2"></i>Recent Notifications
+      </h5>
+      <% if (recentNotifications.length === 0) { %>
+        <p class="text-muted text-center py-4">No notifications sent yet</p>
+      <% } else { %>
+        <div style="max-height: 400px; overflow-y: auto;">
+          <% recentNotifications.forEach(notification => { %>
+            <div class="notification-item <%= notification.status %>">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-bold">
+                    <i class="fas fa-<%= notification.type === 'email' ? 'envelope' : 'sms' %> me-2"></i>
+                    <%= notification.type.toUpperCase() %> - <%= notification.student_name || 'N/A' %>
+                  </div>
+                  <div class="text-muted small mb-1">To: <%= notification.recipient %></div>
+                  <div class="small"><%= notification.content.substring(0, 100) %>...</div>
+                  <% if (notification.error_message) { %>
+                    <div class="text-danger small mt-1">
+                      <i class="fas fa-exclamation-triangle me-1"></i><%= notification.error_message %>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-<%= notification.status === 'sent' ? 'success' : 'danger' %>">
+                    <%= notification.status %>
+                  </span>
+                  <div class="text-muted small mt-1">
+                    <%= new Date(notification.created_at).toLocaleString() %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function testNotification(type) {
+      const recipient = type === 'email' 
+        ? document.getElementById('test_email').value
+        : document.getElementById('test_phone').value;
+      
+      if (!recipient) {
+        alert(`Please enter a ${type === 'email' ? 'email address' : 'phone number'}`);
+        return;
+      }
+      
+      try {
+        const response = await fetch('/notifications/test', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ type, recipient })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert(`Test ${type} sent successfully!`);
+        } else {
+          alert(`Failed to send test ${type}: ${result.error}`);
+        }
+      } catch (error) {
+        alert(`Error sending test ${type}: ${error.message}`);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,539 +1,333 @@
 import cron from 'node-cron';
-import { all, run } from '../db.js';
-import nodemailer from 'nodemailer';
-import twilio from 'twilio';
+import { getDB } from '../db.js';
+import NotificationService from './notification-service.js';
 
 class NotificationScheduler {
   constructor() {
+    this.db = getDB();
     this.jobs = new Map();
-    this.isInitialized = false;
   }
 
-  // Initialize the scheduler
-  async initialize() {
-    if (this.isInitialized) return;
-    
+  // Initialize all scheduled jobs
+  init() {
     console.log('Initializing notification scheduler...');
     
-    // Schedule daily absence notifications (runs every hour during school hours)
-    cron.schedule('0 8-17 * * 1-5', async () => {
-      await this.sendDailyAbsenceNotifications();
+    // Check for low attendance daily at 6 PM
+    this.scheduleJob('low-attendance-check', '0 18 * * *', () => {
+      this.checkLowAttendance();
     });
 
-    // Schedule weekly reports (runs every Friday at 5 PM)
-    cron.schedule('0 17 * * 5', async () => {
-      await this.sendWeeklyReports();
+    // Send weekly reports every Friday at 5 PM
+    this.scheduleJob('weekly-reports', '0 17 * * 5', () => {
+      this.sendWeeklyReports();
     });
 
-    // Schedule monthly reports (runs on the 1st of every month at 6 PM)
-    cron.schedule('0 18 1 * *', async () => {
-      await this.sendMonthlyReports();
+    // Send monthly reports on the last day of each month at 6 PM
+    this.scheduleJob('monthly-reports', '0 18 L * *', () => {
+      this.sendMonthlyReports();
     });
 
-    // Schedule low attendance alerts (runs every Monday at 9 AM)
-    cron.schedule('0 9 * * 1', async () => {
-      await this.sendLowAttendanceAlerts();
+    // Daily absence notifications at 4 PM (for today's absences)
+    this.scheduleJob('daily-absence-check', '0 16 * * *', () => {
+      this.sendDailyAbsenceNotifications();
     });
 
-    // Check for custom scheduled notifications every hour
-    cron.schedule('0 * * * *', async () => {
-      await this.processCustomSchedules();
-    });
+    console.log('Notification scheduler initialized with', this.jobs.size, 'jobs');
+  }
 
-    this.isInitialized = true;
-    console.log('Notification scheduler initialized successfully');
+  // Schedule a cron job
+  scheduleJob(name, cronExpression, callback) {
+    try {
+      const job = cron.schedule(cronExpression, callback, {
+        scheduled: false,
+        timezone: process.env.TIMEZONE || 'Asia/Kolkata'
+      });
+      
+      this.jobs.set(name, job);
+      job.start();
+      console.log(`Scheduled job: ${name} with expression: ${cronExpression}`);
+    } catch (error) {
+      console.error(`Failed to schedule job ${name}:`, error);
+    }
+  }
+
+  // Check for students with low attendance and send alerts
+  async checkLowAttendance() {
+    console.log('Running low attendance check...');
+    
+    try {
+      // Get all teachers with low attendance alerts enabled
+      const teachers = await this.db.all(`
+        SELECT t.id, t.name, ns.low_attendance_threshold
+        FROM teachers t
+        JOIN notification_settings ns ON t.id = ns.teacher_id
+        WHERE ns.low_attendance_alerts = 1
+      `);
+
+      for (const teacher of teachers) {
+        // Get students with low attendance for this teacher
+        const studentsWithLowAttendance = await this.db.all(`
+          SELECT 
+            s.*,
+            c.name as class_name,
+            COUNT(a.id) as total_days,
+            COUNT(CASE WHEN a.status = 'present' THEN 1 END) as present_days,
+            ROUND(
+              (COUNT(CASE WHEN a.status = 'present' THEN 1 END) * 100.0 / 
+               NULLIF(COUNT(a.id), 0)), 2
+            ) as attendance_percentage
+          FROM students s
+          JOIN classes c ON s.class_id = c.id
+          LEFT JOIN attendance a ON s.id = a.student_id
+          WHERE c.teacher_id = ?
+            AND (s.parent_email IS NOT NULL OR s.parent_phone IS NOT NULL)
+          GROUP BY s.id
+          HAVING attendance_percentage < ? AND total_days >= 10
+        `, [teacher.id, teacher.low_attendance_threshold]);
+
+        // Send alerts for each student
+        for (const student of studentsWithLowAttendance) {
+          // Check if we've already sent an alert recently (within 7 days)
+          const recentAlert = await this.db.get(`
+            SELECT id FROM notifications_log
+            WHERE student_name = ? 
+              AND content LIKE '%Low Attendance%'
+              AND created_at > datetime('now', '-7 days')
+          `, [student.name]);
+
+          if (!recentAlert) {
+            await NotificationService.sendLowAttendanceAlert(student, student.attendance_percentage);
+            console.log(`Sent low attendance alert for ${student.name} (${student.attendance_percentage}%)`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in low attendance check:', error);
+    }
+  }
+
+  // Send weekly attendance reports
+  async sendWeeklyReports() {
+    console.log('Sending weekly reports...');
+    
+    try {
+      // Get all teachers with weekly reports enabled
+      const teachers = await this.db.all(`
+        SELECT t.id, t.name
+        FROM teachers t
+        JOIN notification_settings ns ON t.id = ns.teacher_id
+        WHERE ns.weekly_reports = 1
+      `);
+
+      for (const teacher of teachers) {
+        // Get all students for this teacher
+        const students = await this.db.all(`
+          SELECT s.*, c.name as class_name
+          FROM students s
+          JOIN classes c ON s.class_id = c.id
+          WHERE c.teacher_id = ?
+            AND (s.parent_email IS NOT NULL OR s.parent_phone IS NOT NULL)
+        `, [teacher.id]);
+
+        for (const student of students) {
+          // Get weekly attendance data (last 7 days)
+          const weeklyData = await this.getWeeklyAttendanceData(student.id);
+          
+          if (weeklyData.totalDays > 0) {
+            await NotificationService.sendWeeklyReport(student, weeklyData);
+            console.log(`Sent weekly report for ${student.name}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error sending weekly reports:', error);
+    }
+  }
+
+  // Send monthly attendance reports
+  async sendMonthlyReports() {
+    console.log('Sending monthly reports...');
+    
+    try {
+      // Get all teachers with monthly reports enabled
+      const teachers = await this.db.all(`
+        SELECT t.id, t.name
+        FROM teachers t
+        JOIN notification_settings ns ON t.id = ns.teacher_id
+        WHERE ns.monthly_reports = 1
+      `);
+
+      for (const teacher of teachers) {
+        // Get all students for this teacher
+        const students = await this.db.all(`
+          SELECT s.*, c.name as class_name
+          FROM students s
+          JOIN classes c ON s.class_id = c.id
+          WHERE c.teacher_id = ?
+            AND (s.parent_email IS NOT NULL OR s.parent_phone IS NOT NULL)
+        `, [teacher.id]);
+
+        for (const student of students) {
+          // Get monthly attendance data
+          const monthlyData = await this.getMonthlyAttendanceData(student.id);
+          
+          if (monthlyData.totalDays > 0) {
+            await NotificationService.sendMonthlyReport(student, monthlyData);
+            console.log(`Sent monthly report for ${student.name}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error sending monthly reports:', error);
+    }
   }
 
   // Send daily absence notifications
   async sendDailyAbsenceNotifications() {
+    console.log('Sending daily absence notifications...');
+    
     try {
-      console.log('Processing daily absence notifications...');
-      
-      const today = new Date().toISOString().slice(0, 10);
-      
-      // Get all teachers with absence alerts enabled
-      const teachers = await all(`
-        SELECT DISTINCT t.id, t.name, ns.email_enabled, ns.sms_enabled
-        FROM teachers t
-        JOIN notification_settings ns ON t.id = ns.teacher_id
-        WHERE ns.absence_alerts = 1 AND (ns.email_enabled = 1 OR ns.sms_enabled = 1)
-      `);
-
-      for (const teacher of teachers) {
-        // Get classes for this teacher
-        const classes = await all(`
-          SELECT id FROM classes WHERE teacher_id = ?
-        `, [teacher.id]);
-
-        for (const classInfo of classes) {
-          await this.sendAbsenceNotificationsForClass(classInfo.id, today, teacher.id);
-        }
-      }
-      
-      console.log('Daily absence notifications processed');
-    } catch (error) {
-      console.error('Error processing daily absence notifications:', error);
-    }
-  }
-
-  // Send weekly reports
-  async sendWeeklyReports() {
-    try {
-      console.log('Processing weekly reports...');
-      
-      // Get all teachers with weekly reports enabled
-      const teachers = await all(`
-        SELECT t.id, t.name, ns.report_day, ns.report_time
-        FROM teachers t
-        JOIN notification_settings ns ON t.id = ns.teacher_id
-        WHERE ns.weekly_reports = 1 AND (ns.email_enabled = 1 OR ns.sms_enabled = 1)
-      `);
-
-      for (const teacher of teachers) {
-        await this.sendAttendanceReports(teacher.id, 'weekly');
-      }
-      
-      console.log('Weekly reports processed');
-    } catch (error) {
-      console.error('Error processing weekly reports:', error);
-    }
-  }
-
-  // Send monthly reports
-  async sendMonthlyReports() {
-    try {
-      console.log('Processing monthly reports...');
-      
-      // Get all teachers with monthly reports enabled
-      const teachers = await all(`
+      // Get all teachers with absence notifications enabled
+      const teachers = await this.db.all(`
         SELECT t.id, t.name
         FROM teachers t
         JOIN notification_settings ns ON t.id = ns.teacher_id
-        WHERE ns.monthly_reports = 1 AND (ns.email_enabled = 1 OR ns.sms_enabled = 1)
+        WHERE ns.absence_notifications = 1
       `);
 
       for (const teacher of teachers) {
-        await this.sendAttendanceReports(teacher.id, 'monthly');
-      }
-      
-      console.log('Monthly reports processed');
-    } catch (error) {
-      console.error('Error processing monthly reports:', error);
-    }
-  }
+        // Get today's absent students for this teacher
+        const absentStudents = await this.db.all(`
+          SELECT s.*, c.name as class_name, a.date
+          FROM students s
+          JOIN classes c ON s.class_id = c.id
+          JOIN attendance a ON s.id = a.student_id
+          WHERE c.teacher_id = ?
+            AND a.status = 'absent'
+            AND DATE(a.date) = DATE('now')
+            AND (s.parent_email IS NOT NULL OR s.parent_phone IS NOT NULL)
+        `, [teacher.id]);
 
-  // Send low attendance alerts
-  async sendLowAttendanceAlerts() {
-    try {
-      console.log('Processing low attendance alerts...');
-      
-      // Get all teachers with low attendance alerts enabled
-      const teachers = await all(`
-        SELECT t.id, t.name, ns.low_attendance_threshold
-        FROM teachers t
-        JOIN notification_settings ns ON t.id = ns.teacher_id
-        WHERE ns.low_attendance_alerts = 1 AND (ns.email_enabled = 1 OR ns.sms_enabled = 1)
-      `);
+        for (const student of absentStudents) {
+          // Check if we've already sent notification for this absence
+          const existingNotification = await this.db.get(`
+            SELECT id FROM notifications_log
+            WHERE student_name = ? 
+              AND content LIKE '%absent%'
+              AND DATE(created_at) = DATE('now')
+          `, [student.name]);
 
-      for (const teacher of teachers) {
-        await this.sendLowAttendanceAlertsForTeacher(teacher.id, teacher.low_attendance_threshold || 75);
-      }
-      
-      console.log('Low attendance alerts processed');
-    } catch (error) {
-      console.error('Error processing low attendance alerts:', error);
-    }
-  }
-
-  // Process custom scheduled notifications
-  async processCustomSchedules() {
-    try {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
-      
-      // Get scheduled notifications that should run now
-      const scheduledNotifications = await all(`
-        SELECT * FROM scheduled_notifications 
-        WHERE is_active = 1 
-        AND (next_run IS NULL OR next_run <= datetime('now'))
-      `);
-
-      for (const schedule of scheduledNotifications) {
-        try {
-          await this.executeScheduledNotification(schedule);
-          
-          // Update next run time
-          const nextRun = this.calculateNextRun(schedule);
-          await run(`
-            UPDATE scheduled_notifications 
-            SET last_run = datetime('now'), next_run = ?
-            WHERE id = ?
-          `, [nextRun, schedule.id]);
-          
-        } catch (error) {
-          console.error(`Error executing scheduled notification ${schedule.id}:`, error);
+          if (!existingNotification) {
+            const date = new Date(student.date).toLocaleDateString();
+            await NotificationService.sendAbsenceNotification(student, date);
+            console.log(`Sent absence notification for ${student.name} on ${date}`);
+          }
         }
       }
-      
     } catch (error) {
-      console.error('Error processing custom schedules:', error);
+      console.error('Error sending daily absence notifications:', error);
     }
   }
 
-  // Execute a scheduled notification
-  async executeScheduledNotification(schedule) {
-    switch (schedule.notification_type) {
-      case 'weekly_report':
-        await this.sendAttendanceReports(schedule.teacher_id, 'weekly');
-        break;
-      case 'monthly_report':
-        await this.sendAttendanceReports(schedule.teacher_id, 'monthly');
-        break;
-      case 'low_attendance_alert':
-        await this.sendLowAttendanceAlertsForTeacher(schedule.teacher_id);
-        break;
-      case 'absence_alert':
-        const today = new Date().toISOString().slice(0, 10);
-        const classes = await all(`SELECT id FROM classes WHERE teacher_id = ?`, [schedule.teacher_id]);
-        for (const classInfo of classes) {
-          await this.sendAbsenceNotificationsForClass(classInfo.id, today, schedule.teacher_id);
-        }
-        break;
-    }
+  // Get weekly attendance data for a student
+  async getWeeklyAttendanceData(studentId) {
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 7);
+    const weekEnd = new Date();
+
+    const data = await this.db.get(`
+      SELECT 
+        COUNT(*) as totalDays,
+        COUNT(CASE WHEN status = 'present' THEN 1 END) as presentDays,
+        COUNT(CASE WHEN status = 'absent' THEN 1 END) as absentDays,
+        COUNT(CASE WHEN status = 'late' THEN 1 END) as lateDays,
+        ROUND(
+          (COUNT(CASE WHEN status = 'present' THEN 1 END) * 100.0 / 
+           NULLIF(COUNT(*), 0)), 2
+        ) as attendancePercentage
+      FROM attendance
+      WHERE student_id = ?
+        AND date >= date('now', '-7 days')
+        AND date <= date('now')
+    `, [studentId]);
+
+    // Get daily records for the week
+    const dailyRecords = await this.db.all(`
+      SELECT DATE(date) as date, status
+      FROM attendance
+      WHERE student_id = ?
+        AND date >= date('now', '-7 days')
+        AND date <= date('now')
+      ORDER BY date DESC
+    `, [studentId]);
+
+    return {
+      ...data,
+      weekStart: weekStart.toLocaleDateString(),
+      weekEnd: weekEnd.toLocaleDateString(),
+      dailyRecords
+    };
   }
 
-  // Calculate next run time for a schedule
-  calculateNextRun(schedule) {
+  // Get monthly attendance data for a student
+  async getMonthlyAttendanceData(studentId) {
     const now = new Date();
-    let nextRun = new Date(now);
-    
-    switch (schedule.schedule_type) {
-      case 'daily':
-        nextRun.setDate(nextRun.getDate() + 1);
-        break;
-      case 'weekly':
-        nextRun.setDate(nextRun.getDate() + 7);
-        break;
-      case 'monthly':
-        nextRun.setMonth(nextRun.getMonth() + 1);
-        break;
-    }
-    
-    // Set the time
-    if (schedule.schedule_time) {
-      const [hours, minutes] = schedule.schedule_time.split(':');
-      nextRun.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-    }
-    
-    return nextRun.toISOString();
-  }
+    const monthName = now.toLocaleDateString('en-US', { month: 'long' });
+    const year = now.getFullYear();
 
-  // Helper method to send absence notifications for a specific class
-  async sendAbsenceNotificationsForClass(classId, date, teacherId) {
-    const transporter = this.createEmailTransporter();
-    const twilioClient = this.createTwilioClient();
-    
-    // Get absent students with guardian contact info
-    const absentStudents = await all(`
+    const data = await this.db.get(`
       SELECT 
-        s.id, s.name as student_name, s.roll_number,
-        g.name as guardian_name, g.email, g.phone, g.preferred_channel,
-        c.name as class_name, c.section, c.subject,
-        a.id as attendance_id
-      FROM attendance a
-      JOIN students s ON a.student_id = s.id
-      JOIN classes c ON a.class_id = c.id
-      LEFT JOIN guardians g ON s.id = g.student_id
-      WHERE a.class_id = ? AND a.date = ? AND a.status = 'absent'
-      AND (g.email IS NOT NULL OR g.phone IS NOT NULL)
-    `, [classId, date]);
+        COUNT(*) as totalDays,
+        COUNT(CASE WHEN status = 'present' THEN 1 END) as presentDays,
+        COUNT(CASE WHEN status = 'absent' THEN 1 END) as absentDays,
+        COUNT(CASE WHEN status = 'late' THEN 1 END) as lateDays,
+        ROUND(
+          (COUNT(CASE WHEN status = 'present' THEN 1 END) * 100.0 / 
+           NULLIF(COUNT(*), 0)), 2
+        ) as attendancePercentage
+      FROM attendance
+      WHERE student_id = ?
+        AND strftime('%Y-%m', date) = strftime('%Y-%m', 'now')
+    `, [studentId]);
 
-    for (const student of absentStudents) {
-      try {
-        // Send email notification
-        if (transporter && student.email && (student.preferred_channel === 'email' || student.preferred_channel === 'both')) {
-          const emailTemplate = await this.getNotificationTemplate('absence_email', teacherId);
-          const emailContent = this.renderTemplate(emailTemplate, {
-            student_name: student.student_name,
-            guardian_name: student.guardian_name,
-            class_name: student.class_name,
-            section: student.section,
-            date: new Date(date).toLocaleDateString(),
-            roll_number: student.roll_number
-          });
-          
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM || 'no-reply@school.com',
-            to: student.email,
-            subject: `Absence Alert: ${student.student_name} - ${new Date(date).toLocaleDateString()}`,
-            html: emailContent
-          });
-          
-          await this.logNotification(student.attendance_id, 'email', 'sent', null, null);
-        }
-        
-        // Send SMS notification
-        if (twilioClient && student.phone && (student.preferred_channel === 'sms' || student.preferred_channel === 'both')) {
-          const smsTemplate = await this.getNotificationTemplate('absence_sms', teacherId);
-          const smsContent = this.renderTemplate(smsTemplate, {
-            student_name: student.student_name,
-            guardian_name: student.guardian_name,
-            class_name: student.class_name,
-            section: student.section,
-            date: new Date(date).toLocaleDateString(),
-            roll_number: student.roll_number
-          });
-          
-          const message = await twilioClient.messages.create({
-            from: process.env.TWILIO_FROM,
-            to: student.phone,
-            body: smsContent
-          });
-          
-          await this.logNotification(student.attendance_id, 'sms', 'sent', message.sid, null);
-        }
-        
-      } catch (error) {
-        console.error(`Notification error for student ${student.student_name}:`, error);
-        await this.logNotification(student.attendance_id, 'email', 'failed', null, error.message);
-      }
+    return {
+      ...data,
+      monthName,
+      year
+    };
+  }
+
+  // Stop a specific job
+  stopJob(name) {
+    const job = this.jobs.get(name);
+    if (job) {
+      job.stop();
+      this.jobs.delete(name);
+      console.log(`Stopped job: ${name}`);
     }
   }
 
-  // Helper method to send low attendance alerts for a teacher
-  async sendLowAttendanceAlertsForTeacher(teacherId, threshold = 75) {
-    const transporter = this.createEmailTransporter();
-    const twilioClient = this.createTwilioClient();
-    
-    // Get students with low attendance (last 30 days)
-    const lowAttendanceStudents = await all(`
-      SELECT 
-        s.id, s.name as student_name, s.roll_number,
-        g.name as guardian_name, g.email, g.phone, g.preferred_channel,
-        c.name as class_name, c.section,
-        COUNT(a.id) as total_days,
-        COUNT(CASE WHEN a.status IN ('present', 'late') THEN 1 END) as present_days,
-        ROUND(COUNT(CASE WHEN a.status IN ('present', 'late') THEN 1 END) * 100.0 / COUNT(a.id), 2) as attendance_rate
-      FROM students s
-      JOIN classes c ON s.class_id = c.id
-      LEFT JOIN guardians g ON s.id = g.student_id
-      LEFT JOIN attendance a ON s.id = a.student_id 
-        AND a.date >= date('now', '-30 days')
-        AND a.class_id = c.id
-      WHERE c.teacher_id = ? AND (g.email IS NOT NULL OR g.phone IS NOT NULL)
-      GROUP BY s.id, s.name, s.roll_number, g.name, g.email, g.phone, g.preferred_channel, c.name, c.section
-      HAVING attendance_rate < ? AND total_days >= 10
-    `, [teacherId, threshold]);
-
-    for (const student of lowAttendanceStudents) {
-      try {
-        // Send email notification
-        if (transporter && student.email && (student.preferred_channel === 'email' || student.preferred_channel === 'both')) {
-          const emailTemplate = await this.getNotificationTemplate('low_attendance_email', teacherId);
-          const emailContent = this.renderTemplate(emailTemplate, {
-            student_name: student.student_name,
-            guardian_name: student.guardian_name,
-            class_name: student.class_name,
-            section: student.section,
-            attendance_rate: student.attendance_rate,
-            threshold: threshold,
-            present_days: student.present_days,
-            total_days: student.total_days,
-            roll_number: student.roll_number
-          });
-          
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM || 'no-reply@school.com',
-            to: student.email,
-            subject: `Low Attendance Alert: ${student.student_name} (${student.attendance_rate}%)`,
-            html: emailContent
-          });
-          
-          await this.logNotification(null, 'email', 'sent', null, null, 'low_attendance', student.id);
-        }
-        
-        // Send SMS notification
-        if (twilioClient && student.phone && (student.preferred_channel === 'sms' || student.preferred_channel === 'both')) {
-          const smsTemplate = await this.getNotificationTemplate('low_attendance_sms', teacherId);
-          const smsContent = this.renderTemplate(smsTemplate, {
-            student_name: student.student_name,
-            guardian_name: student.guardian_name,
-            class_name: student.class_name,
-            section: student.section,
-            attendance_rate: student.attendance_rate,
-            threshold: threshold,
-            present_days: student.present_days,
-            total_days: student.total_days,
-            roll_number: student.roll_number
-          });
-          
-          const message = await twilioClient.messages.create({
-            from: process.env.TWILIO_FROM,
-            to: student.phone,
-            body: smsContent
-          });
-          
-          await this.logNotification(null, 'sms', 'sent', message.sid, null, 'low_attendance', student.id);
-        }
-        
-      } catch (error) {
-        console.error(`Low attendance notification error for student ${student.student_name}:`, error);
-        await this.logNotification(null, 'email', 'failed', null, error.message, 'low_attendance', student.id);
-      }
+  // Stop all jobs
+  stopAll() {
+    for (const [name, job] of this.jobs) {
+      job.stop();
+      console.log(`Stopped job: ${name}`);
     }
+    this.jobs.clear();
+    console.log('All notification jobs stopped');
   }
 
-  // Helper method to send attendance reports
-  async sendAttendanceReports(teacherId, reportType) {
-    const transporter = this.createEmailTransporter();
-    const twilioClient = this.createTwilioClient();
-    
-    // Calculate date range
-    const endDate = new Date();
-    const startDate = new Date();
-    
-    if (reportType === 'weekly') {
-      startDate.setDate(endDate.getDate() - 7);
-    } else {
-      startDate.setMonth(endDate.getMonth() - 1);
+  // Get job status
+  getJobStatus() {
+    const status = {};
+    for (const [name, job] of this.jobs) {
+      status[name] = {
+        running: job.running,
+        scheduled: job.scheduled
+      };
     }
-    
-    // Get students with attendance data
-    const studentsWithAttendance = await all(`
-      SELECT 
-        s.id, s.name as student_name, s.roll_number,
-        g.name as guardian_name, g.email, g.phone, g.preferred_channel,
-        c.name as class_name, c.section,
-        COUNT(a.id) as total_days,
-        COUNT(CASE WHEN a.status = 'present' THEN 1 END) as present_days,
-        COUNT(CASE WHEN a.status = 'absent' THEN 1 END) as absent_days,
-        COUNT(CASE WHEN a.status = 'late' THEN 1 END) as late_days,
-        ROUND(COUNT(CASE WHEN a.status IN ('present', 'late') THEN 1 END) * 100.0 / COUNT(a.id), 2) as attendance_rate
-      FROM students s
-      JOIN classes c ON s.class_id = c.id
-      LEFT JOIN guardians g ON s.id = g.student_id
-      LEFT JOIN attendance a ON s.id = a.student_id 
-        AND a.date BETWEEN ? AND ?
-        AND a.class_id = c.id
-      WHERE c.teacher_id = ? AND (g.email IS NOT NULL OR g.phone IS NOT NULL)
-      GROUP BY s.id, s.name, s.roll_number, g.name, g.email, g.phone, g.preferred_channel, c.name, c.section
-      HAVING total_days > 0
-    `, [startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10), teacherId]);
-
-    for (const student of studentsWithAttendance) {
-      try {
-        // Send email report
-        if (transporter && student.email && (student.preferred_channel === 'email' || student.preferred_channel === 'both')) {
-          const emailTemplate = await this.getNotificationTemplate(`${reportType}_report_email`, teacherId);
-          const emailContent = this.renderTemplate(emailTemplate, {
-            student_name: student.student_name,
-            guardian_name: student.guardian_name,
-            class_name: student.class_name,
-            section: student.section,
-            attendance_rate: student.attendance_rate,
-            present_days: student.present_days,
-            absent_days: student.absent_days,
-            late_days: student.late_days,
-            total_days: student.total_days,
-            roll_number: student.roll_number,
-            start_date: startDate.toLocaleDateString(),
-            end_date: endDate.toLocaleDateString(),
-            report_type: reportType
-          });
-          
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM || 'no-reply@school.com',
-            to: student.email,
-            subject: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Attendance Report: ${student.student_name}`,
-            html: emailContent
-          });
-          
-          await this.logNotification(null, 'email', 'sent', null, null, `${reportType}_report`, student.id);
-        }
-        
-        // Send SMS summary (shorter version)
-        if (twilioClient && student.phone && (student.preferred_channel === 'sms' || student.preferred_channel === 'both')) {
-          const smsTemplate = await this.getNotificationTemplate(`${reportType}_report_sms`, teacherId);
-          const smsContent = this.renderTemplate(smsTemplate, {
-            student_name: student.student_name,
-            guardian_name: student.guardian_name,
-            attendance_rate: student.attendance_rate,
-            present_days: student.present_days,
-            total_days: student.total_days,
-            report_type: reportType
-          });
-          
-          const message = await twilioClient.messages.create({
-            from: process.env.TWILIO_FROM,
-            to: student.phone,
-            body: smsContent
-          });
-          
-          await this.logNotification(null, 'sms', 'sent', message.sid, null, `${reportType}_report`, student.id);
-        }
-        
-      } catch (error) {
-        console.error(`Report notification error for student ${student.student_name}:`, error);
-        await this.logNotification(null, 'email', 'failed', null, error.message, `${reportType}_report`, student.id);
-      }
-    }
-  }
-
-  // Helper methods
-  createEmailTransporter() {
-    if (!process.env.SMTP_HOST) return null;
-    
-    return nodemailer.createTransporter({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
-      secure: process.env.SMTP_PORT === '465',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
-  }
-
-  createTwilioClient() {
-    if (!process.env.TWILIO_SID || !process.env.TWILIO_TOKEN) return null;
-    return twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
-  }
-
-  async getNotificationTemplate(templateType, teacherId) {
-    const templates = await all(`
-      SELECT content FROM notification_templates 
-      WHERE type = ? AND (teacher_id = ? OR is_global = 1)
-      ORDER BY teacher_id DESC
-      LIMIT 1
-    `, [templateType, teacherId]);
-    
-    if (templates.length > 0) {
-      return templates[0].content;
-    }
-    
-    // Return a basic template if none found
-    return `Hello {{guardian_name}}, this is a notification about {{student_name}}.`;
-  }
-
-  renderTemplate(template, variables) {
-    let rendered = template;
-    for (const [key, value] of Object.entries(variables)) {
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      rendered = rendered.replace(regex, value || '');
-    }
-    return rendered;
-  }
-
-  async logNotification(attendanceId, channel, status, providerId, error, notificationType = null, studentId = null) {
-    await run(`
-      INSERT INTO notification_log 
-      (attendance_id, student_id, channel, status, provider_id, error, notification_type, sent_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `, [attendanceId, studentId, channel, status, providerId, error, notificationType]);
+    return status;
   }
 }
 
-// Create and export singleton instance
-const notificationScheduler = new NotificationScheduler();
-export default notificationScheduler;
+export default new NotificationScheduler();
