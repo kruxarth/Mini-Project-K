@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .form-card { 
+      background: white; 
+      border-radius: 15px; 
+      padding: 30px; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08); 
+      margin-bottom: 20px;
+    }
+    .header-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 0;
+      margin-bottom: 30px;
+    }
+    .section-header {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin: 20px 0 15px 0;
+      border-left: 4px solid #007bff;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="/logout" class="d-inline">
+                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="mb-2">
+            <i class="fas fa-<%= isEdit ? 'edit' : 'user-plus' %> me-3"></i><%= title %>
+          </h1>
+          <p class="mb-0 opacity-90"><%= isEdit ? 'Update student information' : 'Add a new student to your class' %></p>
+        </div>
+        <div class="col-md-4 text-end">
+          <a href="/manage/students" class="btn btn-light">
+            <i class="fas fa-arrow-left me-2"></i>Back to Students
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="form-card">
+          <form method="post" action="/manage/students/save" id="studentForm">
+            <% if (isEdit && student) { %>
+              <input type="hidden" name="id" value="<%= student.id %>">
+            <% } %>
+
+            <!-- Basic Information -->
+            <div class="section-header">
+              <h5 class="mb-0">
+                <i class="fas fa-user me-2"></i>Basic Information
+              </h5>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="name" class="form-label">Full Name *</label>
+                  <input type="text" class="form-control" id="name" name="name" 
+                         value="<%= student ? student.name : '' %>" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="roll_number" class="form-label">Roll Number *</label>
+                  <input type="text" class="form-control" id="roll_number" name="roll_number" 
+                         value="<%= student ? student.roll_number : '' %>" required>
+                  <div class="form-text">Must be unique within the class</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="class_id" class="form-label">Class *</label>
+                  <select class="form-select" id="class_id" name="class_id" required>
+                    <option value="">Select Class</option>
+                    <% classes.forEach(classItem => { %>
+                      <option value="<%= classItem.id %>" 
+                              <%= student && student.class_id == classItem.id ? 'selected' : '' %>>
+                        <%= classItem.name %><% if (classItem.section) { %> - Section <%= classItem.section %><% } %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="enrollment_status" class="form-label">Enrollment Status</label>
+                  <select class="form-select" id="enrollment_status" name="enrollment_status">
+                    <option value="active" <%= student && student.enrollment_status === 'active' ? 'selected' : '' %>>Active</option>
+                    <option value="inactive" <%= student && student.enrollment_status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Student Contact Information -->
+            <div class="section-header">
+              <h5 class="mb-0">
+                <i class="fas fa-address-book me-2"></i>Student Contact Information
+              </h5>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email Address</label>
+                  <input type="email" class="form-control" id="email" name="email" 
+                         value="<%= student ? (student.email || '') : '' %>">
+                  <div class="form-text">Optional - Student's personal email</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Phone Number</label>
+                  <input type="tel" class="form-control" id="phone" name="phone" 
+                         value="<%= student ? (student.phone || '') : '' %>">
+                  <div class="form-text">Optional - Student's personal phone</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Parent/Guardian Contact Information -->
+            <div class="section-header">
+              <h5 class="mb-0">
+                <i class="fas fa-users me-2"></i>Parent/Guardian Contact Information
+              </h5>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="parent_email" class="form-label">Parent Email Address</label>
+                  <input type="email" class="form-control" id="parent_email" name="parent_email" 
+                         value="<%= student ? (student.parent_email || '') : '' %>">
+                  <div class="form-text">For attendance notifications and reports</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="parent_phone" class="form-label">Parent Phone Number</label>
+                  <input type="tel" class="form-control" id="parent_phone" name="parent_phone" 
+                         value="<%= student ? (student.parent_phone || '') : '' %>">
+                  <div class="form-text">For SMS notifications</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="section-header">
+              <h5 class="mb-0">
+                <i class="fas fa-sticky-note me-2"></i>Additional Information
+              </h5>
+            </div>
+
+            <div class="mb-3">
+              <label for="notes" class="form-label">Notes / Remarks</label>
+              <textarea class="form-control" id="notes" name="notes" rows="3" 
+                        placeholder="Any additional notes about the student..."><%= student ? (student.notes || '') : '' %></textarea>
+              <div class="form-text">Optional - Any special notes or remarks about the student</div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+              <a href="/manage/students" class="btn btn-outline-secondary me-md-2">
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-<%= isEdit ? 'save' : 'plus' %> me-2"></i><%= isEdit ? 'Update Student' : 'Add Student' %>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Form Guidelines -->
+        <div class="form-card">
+          <h5 class="mb-3">
+            <i class="fas fa-info-circle me-2"></i>Guidelines
+          </h5>
+          <ul class="list-unstyled">
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>
+              <strong>Required fields:</strong> Name, Roll Number, and Class must be filled
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>
+              <strong>Roll Number:</strong> Must be unique within the selected class
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>
+              <strong>Parent Contact:</strong> Recommended for attendance notifications
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>
+              <strong>Status:</strong> Set to "Inactive" for students who are no longer attending
+            </li>
+            <li class="mb-0">
+              <i class="fas fa-check text-success me-2"></i>
+              <strong>Notes:</strong> Use for any special information about the student
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Form validation
+    document.getElementById('studentForm').addEventListener('submit', function(e) {
+      const name = document.getElementById('name').value.trim();
+      const rollNumber = document.getElementById('roll_number').value.trim();
+      const classId = document.getElementById('class_id').value;
+
+      if (!name || !rollNumber || !classId) {
+        e.preventDefault();
+        alert('Please fill in all required fields (Name, Roll Number, and Class)');
+        return;
+      }
+
+      // Validate email format if provided
+      const email = document.getElementById('email').value.trim();
+      const parentEmail = document.getElementById('parent_email').value.trim();
+      
+      if (email && !isValidEmail(email)) {
+        e.preventDefault();
+        alert('Please enter a valid student email address');
+        return;
+      }
+
+      if (parentEmail && !isValidEmail(parentEmail)) {
+        e.preventDefault();
+        alert('Please enter a valid parent email address');
+        return;
+      }
+    });
+
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    // Auto-format phone numbers (basic formatting)
+    document.getElementById('phone').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length >= 10) {
+        value = value.substring(0, 10);
+      }
+      e.target.value = value;
+    });
+
+    document.getElementById('parent_phone').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length >= 10) {
+        value = value.substring(0, 10);
+      }
+      e.target.value = value;
+    });
+  </script>
+</body>
+</html>

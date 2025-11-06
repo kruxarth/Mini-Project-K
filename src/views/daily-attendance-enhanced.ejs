@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daily Attendance - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .attendance-card { 
+      background: white; 
+      border-radius: 15px; 
+      padding: 25px; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08); 
+      margin-bottom: 20px;
+    }
+    .header-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 0;
+      margin-bottom: 30px;
+    }
+    .student-row {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .student-row:hover { background-color: #f8f9fa; }
+    .student-row.error { border-color: #dc3545; background-color: #fff5f5; }
+    .student-row.duplicate { border-color: #ffc107; background-color: #fffbf0; }
+    
+    .status-btn {
+      border: 2px solid #dee2e6;
+      background: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 2px;
+      min-width: 80px;
+    }
+    .status-btn:hover { background-color: #f8f9fa; }
+    .status-btn.present { border-color: #28a745; background-color: #28a745; color: white; }
+    .status-btn.absent { border-color: #dc3545; background-color: #dc3545; color: white; }
+    .status-btn.late { border-color: #ffc107; background-color: #ffc107; color: white; }
+    .status-btn.excused { border-color: #17a2b8; background-color: #17a2b8; color: white; }
+    
+    .timing-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .validation-summary {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .validation-summary.show { display: block; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="/logout" class="d-inline">
+                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="mb-2">
+            <i class="fas fa-calendar-check me-3"></i>Daily Attendance
+          </h1>
+          <p class="mb-0 opacity-90">Mark attendance with timing and comprehensive validation</p>
+        </div>
+        <div class="col-md-4 text-end">
+          <div class="badge bg-light text-dark fs-6 p-3">
+            <i class="fas fa-calendar me-2"></i>
+            <%= new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Class Selection -->
+    <div class="attendance-card">
+      <h5 class="mb-3">
+        <i class="fas fa-chalkboard me-2"></i>Select Class
+      </h5>
+      <div class="row">
+        <div class="col-md-6">
+          <select class="form-select" id="classSelect" onchange="loadClassStudents()">
+            <option value="">Choose a class...</option>
+            <% classes.forEach(classItem => { %>
+              <option value="<%= classItem.id %>" 
+                      data-name="<%= classItem.name %>"
+                      data-section="<%= classItem.section || '' %>"
+                      data-students="<%= classItem.student_count %>">
+                <%= classItem.name %>
+                <% if (classItem.section) { %> - Section <%= classItem.section %><% } %>
+                (<%= classItem.student_count %> students)
+              </option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <input type="date" class="form-control" id="attendanceDate" 
+                 value="<%= new Date().toISOString().split('T')[0] %>"
+                 onchange="checkExistingAttendance()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Timing Section -->
+    <div class="timing-section" id="timingSection" style="display: none;">
+      <h5 class="mb-3">
+        <i class="fas fa-clock me-2"></i>Session Timing
+      </h5>
+      <div class="row">
+        <div class="col-md-3">
+          <label for="sessionType" class="form-label">Session Type</label>
+          <select class="form-select" id="sessionType" onchange="updateTimingDefaults()">
+            <option value="morning">Morning Session</option>
+            <option value="afternoon">Afternoon Session</option>
+            <option value="evening">Evening Session</option>
+            <option value="custom">Custom Timing</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="startTime" class="form-label">Start Time</label>
+          <input type="time" class="form-control" id="startTime" value="09:00">
+        </div>
+        <div class="col-md-3">
+          <label for="endTime" class="form-label">End Time</label>
+          <input type="time" class="form-control" id="endTime" value="10:00">
+        </div>
+        <div class="col-md-3">
+          <label for="subject" class="form-label">Subject (Optional)</label>
+          <select class="form-select" id="subject">
+            <option value="">Select Subject</option>
+            <% if (typeof subjects !== 'undefined') { %>
+              <% subjects.forEach(subject => { %>
+                <option value="<%= subject.id %>"><%= subject.name %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validation Summary -->
+    <div class="validation-summary" id="validationSummary">
+      <h6 class="mb-2">
+        <i class="fas fa-exclamation-triangle me-2"></i>Please fix the following issues:
+      </h6>
+      <ul id="validationList" class="mb-0"></ul>
+    </div>
+
+    <!-- Students List -->
+    <div class="attendance-card" id="studentsContainer" style="display: none;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">
+          <i class="fas fa-users me-2"></i>Students Attendance
+        </h5>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-success btn-sm" onclick="markAllAs('present')">
+            <i class="fas fa-check me-1"></i>All Present
+          </button>
+          <button type="button" class="btn btn-outline-danger btn-sm" onclick="markAllAs('absent')">
+            <i class="fas fa-times me-1"></i>All Absent
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAll()">
+            <i class="fas fa-eraser me-1"></i>Clear All
+          </button>
+        </div>
+      </div>
+
+      <div id="studentsList">
+        <!-- Students will be loaded here dynamically -->
+      </div>
+
+      <!-- Save Button -->
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+        <button type="button" class="btn btn-primary" id="saveButton" onclick="saveAttendance()" disabled>
+          <i class="fas fa-save me-2"></i>Save Attendance
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Attendance management functionality will be added here
+    let attendanceData = {};
+    let students = [];
+
+    function updateTimingDefaults() {
+      const sessionType = document.getElementById('sessionType').value;
+      const startTime = document.getElementById('startTime');
+      const endTime = document.getElementById('endTime');
+
+      const timings = {
+        morning: { start: '09:00', end: '12:00' },
+        afternoon: { start: '13:00', end: '16:00' },
+        evening: { start: '17:00', end: '20:00' }
+      };
+
+      if (timings[sessionType]) {
+        startTime.value = timings[sessionType].start;
+        endTime.value = timings[sessionType].end;
+      }
+    }
+
+    async function loadClassStudents() {
+      const classSelect = document.getElementById('classSelect');
+      
+      if (!classSelect.value) {
+        document.getElementById('timingSection').style.display = 'none';
+        document.getElementById('studentsContainer').style.display = 'none';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/class/${classSelect.value}/students`);
+        const data = await response.json();
+        
+        if (data.success) {
+          students = data.students;
+          renderStudents();
+          document.getElementById('timingSection').style.display = 'block';
+          document.getElementById('studentsContainer').style.display = 'block';
+          checkExistingAttendance();
+        }
+      } catch (error) {
+        console.error('Error loading students:', error);
+      }
+    }
+
+    function renderStudents() {
+      const container = document.getElementById('studentsList');
+      
+      if (students.length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-muted">No students found</div>';
+        return;
+      }
+
+      container.innerHTML = students.map(student => `
+        <div class="student-row" id="student-${student.id}">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-user-circle fa-2x text-muted me-3"></i>
+                <div>
+                  <h6 class="mb-0">${student.name}</h6>
+                  <small class="text-muted">Roll: ${student.roll_number || 'N/A'}</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="btn-group" role="group">
+                <button type="button" class="status-btn" onclick="setStatus(${student.id}, 'present')">
+                  <i class="fas fa-check me-1"></i>Present
+                </button>
+                <button type="button" class="status-btn" onclick="setStatus(${student.id}, 'absent')">
+                  <i class="fas fa-times me-1"></i>Absent
+                </button>
+                <button type="button" class="status-btn" onclick="setStatus(${student.id}, 'late')">
+                  <i class="fas fa-clock me-1"></i>Late
+                </button>
+                <button type="button" class="status-btn" onclick="setStatus(${student.id}, 'excused')">
+                  <i class="fas fa-user-check me-1"></i>Excused
+                </button>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <input type="text" class="form-control form-control-sm" 
+                     placeholder="Remarks" 
+                     onchange="setRemarks(${student.id}, this.value)">
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      validateForm();
+    }
+
+    function setStatus(studentId, status) {
+      const studentRow = document.getElementById(`student-${studentId}`);
+      const buttons = studentRow.querySelectorAll('.status-btn');
+      
+      buttons.forEach(btn => {
+        btn.classList.remove('present', 'absent', 'late', 'excused');
+      });
+
+      const selectedButton = studentRow.querySelector(`[onclick*="'${status}'"]`);
+      selectedButton.classList.add(status);
+
+      if (!attendanceData[studentId]) {
+        attendanceData[studentId] = {};
+      }
+      attendanceData[studentId].status = status;
+      attendanceData[studentId].student_id = studentId;
+
+      validateForm();
+    }
+
+    function setRemarks(studentId, remarks) {
+      if (!attendanceData[studentId]) {
+        attendanceData[studentId] = {};
+      }
+      attendanceData[studentId].remarks = remarks;
+    }
+
+    function markAllAs(status) {
+      students.forEach(student => {
+        setStatus(student.id, status);
+      });
+    }
+
+    function clearAll() {
+      attendanceData = {};
+      const buttons = document.querySelectorAll('.status-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('present', 'absent', 'late', 'excused');
+      });
+      validateForm();
+    }
+
+    function validateForm() {
+      const errors = [];
+      const classId = document.getElementById('classSelect').value;
+      const date = document.getElementById('attendanceDate').value;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+
+      if (!classId) errors.push('Please select a class');
+      if (!date) errors.push('Please select a date');
+      if (startTime && endTime && startTime >= endTime) {
+        errors.push('End time must be after start time');
+      }
+
+      const markedStudents = Object.keys(attendanceData).length;
+      if (markedStudents === 0 && students.length > 0) {
+        errors.push('Please mark attendance for at least one student');
+      }
+
+      const summaryDiv = document.getElementById('validationSummary');
+      const listDiv = document.getElementById('validationList');
+      const saveButton = document.getElementById('saveButton');
+
+      if (errors.length === 0) {
+        summaryDiv.classList.remove('show');
+        saveButton.disabled = false;
+        saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Save Attendance';
+        saveButton.className = 'btn btn-primary';
+      } else {
+        summaryDiv.classList.add('show');
+        listDiv.innerHTML = errors.map(error => `<li>${error}</li>`).join('');
+        saveButton.disabled = true;
+        saveButton.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Fix Errors First';
+        saveButton.className = 'btn btn-danger';
+      }
+    }
+
+    async function checkExistingAttendance() {
+      const classId = document.getElementById('classSelect').value;
+      const date = document.getElementById('attendanceDate').value;
+
+      if (!classId || !date) return;
+
+      try {
+        const response = await fetch(`/api/attendance/check?class_id=${classId}&date=${date}`);
+        const data = await response.json();
+
+        if (data.exists) {
+          alert('Attendance for this class and date already exists. You can update it or create a new session.');
+        }
+      } catch (error) {
+        console.error('Error checking existing attendance:', error);
+      }
+    }
+
+    async function saveAttendance() {
+      const classId = document.getElementById('classSelect').value;
+      const date = document.getElementById('attendanceDate').value;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+      const sessionType = document.getElementById('sessionType').value;
+      const subject = document.getElementById('subject').value;
+
+      const attendanceRecords = Object.values(attendanceData).map(record => ({
+        student_id: record.student_id,
+        status: record.status,
+        remarks: record.remarks || null,
+        date: date,
+        start_time: startTime,
+        end_time: endTime,
+        session_type: sessionType,
+        subject_id: subject || null
+      }));
+
+      try {
+        const response = await fetch('/api/attendance/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            class_id: classId,
+            attendance: attendanceRecords
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('Attendance saved successfully!');
+          window.location.reload();
+        } else {
+          alert(result.message || 'Failed to save attendance');
+        }
+      } catch (error) {
+        console.error('Error saving attendance:', error);
+        alert('Error saving attendance');
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      updateTimingDefaults();
+    });
+  </script>
+</body>
+</html>

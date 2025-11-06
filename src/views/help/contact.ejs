@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    .help-content { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .contact-card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); margin-bottom: 25px; text-align: center; }
+    .contact-icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a cadius: 10px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: transform 0.3s;
+    }
+    .contact-method:hover { transform: translateY(-3px); }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="/logout" class="d-inline">
+                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="mb-2">
+            <i class="fas fa-headset me-3"></i>Contact Support
+          </h1>
+          <p class="mb-0 opacity-90">Get help and support for the Attendance Management System</p>
+        </div>
+        <div class="col-md-4 text-end">
+          <a href="/help" class="btn btn-light">
+            <i class="fas fa-arrow-left me-2"></i>Back to Help
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Contact Methods -->
+        <div class="help-card">
+          <h4 class="mb-4">
+            <i class="fas fa-phone me-2"></i>Contact Methods
+          </h4>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="contact-method">
+                <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                <h5>Email Support</h5>
+                <p class="text-muted">Get detailed help via email</p>
+                <a href="mailto:support@gcoea-attendance.com" class="btn btn-primary">
+                  <i class="fas fa-envelope me-2"></i>Send Email
+                </a>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="contact-method">
+                <i class="fas fa-phone fa-3x text-success mb-3"></i>
+                <h5>Phone Support</h5>
+                <p class="text-muted">Speak directly with our team</p>
+                <a href="tel:+91-240-2400000" class="btn btn-success">
+                  <i class="fas fa-phone me-2"></i>Call Now
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback Form -->
+        <div class="help-card">
+          <h4 class="mb-4">
+            <i class="fas fa-comment me-2"></i>Send Feedback
+          </h4>
+          <form id="feedbackForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="name" class="form-label">Your Name</label>
+                  <input type="text" class="form-control" id="name" value="<%= currentUser.name %>" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email Address</label>
+                  <input type="email" class="form-control" id="email" value="<%= currentUser.email %>" required>
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="subject" class="form-label">Subject</label>
+              <select class="form-select" id="subject" required>
+                <option value="">Select a topic</option>
+                <option value="bug">Bug Report</option>
+                <option value="feature">Feature Request</option>
+                <option value="help">Need Help</option>
+                <option value="feedback">General Feedback</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="message" class="form-label">Message</label>
+              <textarea class="form-control" id="message" rows="5" placeholder="Describe your issue or feedback in detail..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane me-2"></i>Send Feedback
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <!-- Quick Info -->
+        <div class="help-card">
+          <h5 class="mb-3">
+            <i class="fas fa-info-circle me-2"></i>Quick Information
+          </h5>
+          <div class="mb-3">
+            <strong>Response Time:</strong><br>
+            <small class="text-muted">We usually reply within 24 hours</small>
+          </div>
+          <div class="mb-3">
+            <strong>Support Hours:</strong><br>
+            <small class="text-muted">Monday - Friday: 9:00 AM - 6:00 PM</small>
+          </div>
+          <div class="mb-3">
+            <strong>Emergency Contact:</strong><br>
+            <small class="text-muted">For urgent issues, call +91-240-2400000</small>
+          </div>
+        </div>
+
+        <!-- FAQ Link -->
+        <div class="help-card">
+          <h5 class="mb-3">
+            <i class="fas fa-question-circle me-2"></i>Before You Contact
+          </h5>
+          <p class="text-muted">Check our FAQ section for quick answers to common questions.</p>
+          <a href="/help/faq" class="btn btn-outline-primary w-100">
+            <i class="fas fa-search me-2"></i>Browse FAQ
+          </a>
+        </div>
+
+        <!-- System Info -->
+        <div class="help-card">
+          <h5 class="mb-3">
+            <i class="fas fa-cog me-2"></i>System Information
+          </h5>
+          <small class="text-muted">
+            <strong>Version:</strong> 1.0.0<br>
+            <strong>User:</strong> <%= currentUser.name %><br>
+            <strong>Role:</strong> Teacher<br>
+            <strong>Last Login:</strong> <%= new Date().toLocaleDateString() %>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+      };
+      
+      // Simulate form submission
+      alert('Thank you for your feedback! We will get back to you within 24 hours.');
+      
+      // Reset form
+      document.getElementById('message').value = '';
+      document.getElementById('subject').value = '';
+    });
+  </script>
+</body>
+</html>lass="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="/logout" class="d-inline"><button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/help">Help Center</a></li>
+        <li class="breadcrumb-item active">Contact Support</li>
+      </ol>
+    </nav>
+
+    <div class="help-content">
+      <h1 class="mb-4"><i class="fas fa-headset me-3 text-primary"></i>Contact Support</h1>
+      
+      <p class="lead mb-5">Need help? Our support team is here to assist you. Choose the best way to reach us based on your needs.</p>
+
+      <!-- Contact Methods -->
+      <div class="row mb-5">
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="contact-card">
+            <div class="contact-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <h4>Email Support</h4>
+            <p class="text-muted">Get detailed help via email</p>
+            <p><strong>support@gcoea-attendance.com</strong></p>
+            <p class="small text-muted">Response time: Within 24 hours</p>
+            <a href="mailto:support@gcoea-attendance.com" class="btn btn-primary">Send Email</a>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="contact-card">
+            <div class="contact-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+              <i class="fas fa-phone"></i>
+            </div>
+            <h4>Phone Support</h4>
+            <p class="text-muted">Speak directly with our team</p>
+            <p><strong>+91-XXX-XXX-XXXX</strong></p>
+            <p class="small text-muted">Mon-Fri: 9:00 AM - 6:00 PM IST</p>
+            <button class="btn btn-success" onclick="alert('Call +91-XXX-XXX-XXXX')">Call Now</button>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="contact-card">
+            <div class="contact-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+              <i class="fab fa-whatsapp"></i>
+            </div>
+            <h4>WhatsApp Support</h4>
+            <p class="text-muted">Quick help via WhatsApp</p>
+            <p><strong>+91-XXX-XXX-XXXX</strong></p>
+            <p class="small text-muted">Mon-Fri: 9:00 AM - 6:00 PM IST</p>
+            <a href="https://wa.me/91XXXXXXXXXX" class="btn btn-warning" target="_blank">Chat on WhatsApp</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support Form -->
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h4 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Send us a Message</h4>
+            </div>
+            <div class="card-body">
+              <form id="supportForm">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">Your Name</label>
+                    <input type="text" class="form-control" id="name" value="<%= currentUser.name %>" required>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" value="<%= currentUser.email %>" required>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="subject" class="form-label">Subject</label>
+                  <select class="form-select" id="subject" required>
+                    <option value="">Select a topic...</option>
+                    <option value="technical">Technical Issue</option>
+                    <option value="account">Account Problem</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="bug">Bug Report</option>
+                    <option value="training">Training Request</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="priority" class="form-label">Priority Level</label>
+                  <select class="form-select" id="priority">
+                    <option value="low">Low - General question</option>
+                    <option value="medium" selected>Medium - Need help soon</option>
+                    <option value="high">High - Urgent issue</option>
+                    <option value="critical">Critical - System down</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="message" class="form-label">Message</label>
+                  <textarea class="form-control" id="message" rows="5" placeholder="Please describe your issue or question in detail..." required></textarea>
+                  <div class="form-text">Include any error messages, steps you've tried, and screenshots if helpful.</div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="attachment" class="form-label">Attachment (optional)</label>
+                  <input type="file" class="form-control" id="attachment" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                  <div class="form-text">Supported formats: JPG, PNG, PDF, DOC, DOCX (Max 5MB)</div>
+                </div>
+
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <!-- Support Hours -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+              <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Support Hours</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>Monday - Friday:</strong><br>9:00 AM - 6:00 PM IST</li>
+                <li class="mb-2"><strong>Saturday:</strong><br>10:00 AM - 2:00 PM IST</li>
+                <li class="mb-2"><strong>Sunday:</strong><br>Closed</li>
+              </ul>
+              <hr>
+              <p class="small text-muted mb-0">
+                <i class="fas fa-info-circle me-1"></i>
+                Email support is available 24/7. We'll respond within 24 hours.
+              </p>
+            </div>
+          </div>
+
+          <!-- FAQ Link -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+              <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Before You Contact Us</h5>
+            </div>
+            <div class="card-body">
+              <p>Check our FAQ section for quick answers to common questions.</p>
+              <a href="/help/faq" class="btn btn-outline-warning">Browse FAQs</a>
+            </div>
+          </div>
+
+          <!-- System Status -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>System Status</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-2">
+                <div class="bg-success rounded-circle me-2" style="width: 12px; height: 12px;"></div>
+                <span>All Systems Operational</span>
+              </div>
+              <small class="text-muted">Last updated: <span id="statusTime"></span></small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response Time Info -->
+      <div class="alert alert-info mt-5">
+        <h5><i class="fas fa-info-circle me-2"></i>Response Time Guidelines</h5>
+        <div class="row">
+          <div class="col-md-3">
+            <strong>Critical Issues:</strong><br>
+            <span class="text-danger">Within 2 hours</span>
+          </div>
+          <div class="col-md-3">
+            <strong>High Priority:</strong><br>
+            <span class="text-warning">Within 4 hours</span>
+          </div>
+          <div class="col-md-3">
+            <strong>Medium Priority:</strong><br>
+            <span class="text-info">Within 24 hours</span>
+          </div>
+          <div class="col-md-3">
+            <strong>Low Priority:</strong><br>
+            <span class="text-success">Within 48 hours</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="row mt-5">
+        <div class="col-12">
+          <h3 class="mb-4">Additional Contact Information</h3>
+        </div>
+        <div class="col-md-6">
+          <h5><i class="fas fa-building me-2"></i>Office Address</h5>
+          <address>
+            Government College of Engineering Aurangabad<br>
+            Chhatrapati Sambhajinagar<br>
+            Maharashtra, India<br>
+            PIN: 431005
+          </address>
+        </div>
+        <div class="col-md-6">
+          <h5><i class="fas fa-users me-2"></i>Development Team</h5>
+          <p>
+            <strong>Lead Developer:</strong> Mayuri Futane<br>
+            <strong>Email:</strong> mjsfutane21@gmail.com<br>
+            <strong>Project:</strong> Mini Project - Attendance Management System
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Update status time
+    document.getElementById('statusTime').textContent = new Date().toLocaleString();
+
+    // Handle form submission
+    document.getElementById('supportForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Collect form data
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        subject: document.getElementById('subject').value,
+        priority: document.getElementById('priority').value,
+        message: document.getElementById('message').value
+      };
+      
+      // Show success message
+      alert('Thank you for contacting us! We have received your message and will respond within our stated timeframe.');
+      
+      // Reset form
+      document.getElementById('message').value = '';
+      document.getElementById('subject').selectedIndex = 0;
+      
+      // In a real implementation, you would send this data to your server
+      console.log('Support request submitted:', formData);
+    });
+  </script>
+</body>
+</html>

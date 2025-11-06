@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - AttendanceMS Professional</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/professional.css">
+</head>
+<body>
+  <!-- Professional Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-professional fixed-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap"></i>
+        <span>AttendanceMS</span>
+        <span class="badge bg-warning ms-2 text-dark">PRO</span>
+      </a>
+      
+      <!-- Search Bar -->
+      <div class="d-none d-lg-flex flex-grow-1 mx-4">
+        <div class="input-group" style="max-width: 400px;">
+          <span class="input-group-text bg-white border-end-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-start-0" placeholder="Search students, classes, reports..." id="globalSearch">
+        </div>
+      </div>
+
+      <!-- Right Navigation -->
+      <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+        <!-- Notifications -->
+        <div class="nav-item dropdown">
+          <button class="btn btn-link text-white position-relative" data-bs-toggle="dropdown">
+            <i class="fas fa-bell fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge">
+              3
+            </span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end dropdown-menu-professional" style="width: 350px;">
+            <div class="dropdown-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Notifications</h6>
+              <button class="btn btn-sm btn-outline-primary">Mark All Read</button>
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="notification-list" style="max-height: 300px; overflow-y: auto;">
+              <a href="#" class="dropdown-item-professional">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <div class="fw-semibold">Low Attendance Alert</div>
+                    <div class="small text-muted">John Doe has 65% attendance</div>
+                    <div class="small text-muted">2 minutes ago</div>
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="dropdown-item-professional">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-success"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <div class="fw-semibold">Attendance Marked</div>
+                    <div class="small text-muted">Class 10A - 28/30 present</div>
+                    <div class="small text-muted">1 hour ago</div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button class="btn btn-link text-white" onclick="window.themeManager?.toggle()" data-bs-toggle="tooltip" title="Toggle Theme">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+
+        <!-- User Menu -->
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+            <img src="https://ui-avatars.com/api/?name=<%= currentUser.name %>&background=ffffff&color=2563eb&size=32" 
+                 class="rounded-circle me-2" width="32" height="32" alt="Avatar">
+            <span class="d-none d-md-inline"><%= currentUser.name %></span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-professional">
+            <li><a class="dropdown-item-professional" href="/profile">
+              <i class="fas fa-user me-2"></i>My Profile
+            </a></li>
+            <li><a class="dropdown-item-professional" href="/settings">
+              <i class="fas fa-cog me-2"></i>Settings
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="/logout" class="d-inline">
+                <button type="submit" class="dropdown-item-professional w-100 text-start">
+                  <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="d-flex" style="margin-top: 76px;">
+    <!-- Professional Sidebar -->
+    <nav class="sidebar-professional">
+      <div class="sidebar-nav">
+        <a class="nav-link active" href="/dashboard">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link" href="/daily-attendance">
+          <i class="fas fa-calendar-check"></i>
+          <span>Daily Attendance</span>
+        </a>
+        <a class="nav-link" href="/manage/students">
+          <i class="fas fa-users"></i>
+          <span>Student Management</span>
+        </a>
+        <a class="nav-link" href="/reports">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reports & Analytics</span>
+        </a>
+        <a class="nav-link" href="/parent-reports">
+          <i class="fas fa-file-alt"></i>
+          <span>Parent Reports</span>
+        </a>
+        <a class="nav-link" href="/notifications">
+          <i class="fas fa-bell"></i>
+          <span>Notifications</span>
+        </a>
+        <a class="nav-link" href="/insights">
+          <i class="fas fa-chart-line"></i>
+          <span>Insights</span>
+        </a>
+        <a class="nav-link" href="/help">
+          <i class="fas fa-question-circle"></i>
+          <span>Help Center</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h1 class="page-title">
+              <i class="fas fa-sun me-3 text-warning"></i>
+              Good <%= new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening' %>, <%= currentUser.name %>!
+            </h1>
+            <p class="page-subtitle">
+              Welcome to your professional attendance management dashboard
+            </p>
+            <div class="mt-3">
+              <span class="badge badge-info me-2">
+                <i class="fas fa-calendar me-1"></i>
+                <%= new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+              </span>
+              <span class="badge badge-success">
+                <i class="fas fa-clock me-1"></i>
+                <span id="currentTime"></span>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-4 text-end">
+            <div class="btn-group" role="group">
+              <a href="/daily-attendance" class="btn btn-primary-professional">
+                <i class="fas fa-plus me-2"></i>Mark Attendance
+              </a>
+              <a href="/reports" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar me-2"></i>Generate Report
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+          <div class="metric-card">
+            <div class="metric-number text-primary" id="totalClasses">
+              <div class="loading-skeleton" style="height: 40px; width: 60px; margin: 0 auto;"></div>
+            </div>
+            <div class="metric-label">Total Classes</div>
+            <div class="mt-2">
+              <small class="text-success">
+                <i class="fas fa-arrow-up me-1"></i>12% from last month
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="metric-card">
+            <div class="metric-number text-success" id="totalStudents">
+              <div class="loading-skeleton" style="height: 40px; width: 80px; margin: 0 auto;"></div>
+            </div>
+            <div class="metric-label">Total Students</div>
+            <div class="mt-2">
+              <small class="text-success">
+                <i class="fas fa-arrow-up me-1"></i>8% from last month
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="metric-card">
+            <div class="metric-number text-info" id="todayPresent">
+              <div class="loading-skeleton" style="height: 40px; width: 70px; margin: 0 auto;"></div>
+            </div>
+            <div class="metric-label">Today's Present</div>
+            <div class="mt-2">
+              <small class="text-muted" id="todayDate"></small>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="metric-card">
+            <div class="metric-number text-warning" id="avgAttendance">
+              <div class="loading-skeleton" style="height: 40px; width: 50px; margin: 0 auto;"></div>
+            </div>
+            <div class="metric-label">Average Attendance</div>
+            <div class="mt-2">
+              <small class="text-success">
+                <i class="fas fa-arrow-up me-1"></i>2.3% from last week
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card-professional mb-4">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+          </h5>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <a href="/manage/students/new" class="btn btn-outline-primary w-100 btn-professional">
+                <i class="fas fa-user-plus me-2"></i>Add Student
+              </a>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-success w-100 btn-professional" onclick="quickMarkAttendance()">
+                <i class="fas fa-check-double me-2"></i>Quick Attendance
+              </button>
+            </div>
+            <div class="col-md-3">
+              <a href="/reports" class="btn btn-outline-info w-100 btn-professional">
+                <i class="fas fa-chart-line me-2"></i>Generate Report
+              </a>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-warning w-100 btn-professional" onclick="exportData()">
+                <i class="fas fa-download me-2"></i>Export Data
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Dashboard -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="card-professional">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">
+                  <i class="fas fa-chart-line me-2"></i>Attendance Trends
+                </h5>
+                <div class="btn-group btn-group-sm" role="group">
+                  <input type="radio" class="btn-check" name="trendPeriod" id="trend7d" checked>
+                  <label class="btn btn-outline-primary" for="trend7d">7D</label>
+                  <input type="radio" class="btn-check" name="trendPeriod" id="trend30d">
+                  <label class="btn btn-outline-primary" for="trend30d">30D</label>
+                  <input type="radio" class="btn-check" name="trendPeriod" id="trend90d">
+                  <label class="btn btn-outline-primary" for="trend90d">90D</label>
+                </div>
+              </div>
+              <canvas id="attendanceTrendChart" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card-professional">
+            <div class="card-body p-4">
+              <h5 class="card-title mb-3">
+                <i class="fas fa-chart-pie me-2"></i>Today's Overview
+              </h5>
+              <canvas id="todayOverviewChart" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity & Classes -->
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card-professional">
+            <div class="card-body p-4">
+              <h5 class="card-title mb-3">
+                <i class="fas fa-clock me-2"></i>Recent Activity
+              </h5>
+              <div class="activity-feed" id="recentActivity">
+                <div class="loading-skeleton" style="height: 60px; margin-bottom: 15px;"></div>
+                <div class="loading-skeleton" style="height: 60px; margin-bottom: 15px;"></div>
+                <div class="loading-skeleton" style="height: 60px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card-professional">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">
+                  <i class="fas fa-chalkboard me-2"></i>Your Classes
+                </h5>
+                <a href="/manage/students" class="btn btn-primary-professional btn-sm">
+                  <i class="fas fa-plus me-2"></i>Add Class
+                </a>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-professional">
+                  <thead>
+                    <tr>
+                      <th>Class</th>
+                      <th>Students</th>
+                      <th>Today's Attendance</th>
+                      <th>Average</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="classesTable">
+                    <tr>
+                      <td colspan="5">
+                        <div class="loading-skeleton" style="height: 40px;"></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    // Professional Dashboard Controller
+    class ProfessionalDashboard {
+      constructor() {
+        this.charts = {};
+        this.data = {};
+        this.init();
+      }
+
+      async init() {
+        this.updateTime();
+        setInterval(() => this.updateTime(), 1000);
+        
+        await this.loadDashboardData();
+        this.initializeCharts();
+        this.setupEventListeners();
+      }
+
+      updateTime() {
+        const now = new Date();
+        document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+      }
+
+      async loadDashboardData() {
+        try {
+          // Load metrics
+          const [totals, today, activity, classes] = await Promise.all([
+            this.fetchJSON('/api/teacher/totals'),
+            this.fetchJSON('/api/teacher/today'),
+            this.fetchJSON('/api/teacher/activity'),
+            this.fetchJSON('/api/teacher/classes')
+          ]);
+
+          this.updateMetrics(totals, today);
+          this.updateActivity(activity);
+          this.updateClassesTable(classes);
+        } catch (error) {
+          console.error('Error loading dashboard data:', error);
+          window.toastManager?.show('Error loading dashboard data', 'error');
+        }
+      }
+
+      updateMetrics(totals, today) {
+        document.getElementById('totalClasses').innerHTML = totals.classes || 0;
+        document.getElementById('totalStudents').innerHTML = totals.students || 0;
+        document.getElementById('todayPresent').innerHTML = today.present || 0;
+        document.getElementById('avgAttendance').innerHTML = Math.round(today.percentage || 0) + '%';
+        document.getElementById('todayDate').textContent = today.date || new Date().toLocaleDateString();
+      }
+
+      updateActivity(activities) {
+        const container = document.getElementById('recentActivity');
+        if (!activities || activities.length === 0) {
+          container.innerHTML = '<div class="text-muted text-center py-3">No recent activity</div>';
+          return;
+        }
+
+        container.innerHTML = activities.map(activity => `
+          <div class="activity-item d-flex align-items-start mb-3">
+            <div class="activity-icon bg-${activity.type} rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <i class="fas fa-${activity.icon} text-white"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">${activity.title}</div>
+              <div class="small text-muted">${activity.description}</div>
+              <div class="small text-muted">${activity.time}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      updateClassesTable(classes) {
+        const tbody = document.getElementById('classesTable');
+        if (!classes || classes.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No classes found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = classes.map(cls => `
+          <tr>
+            <td>
+              <div class="fw-semibold">${cls.name}</div>
+              ${cls.section ? `<small class="text-muted">Section ${cls.section}</small>` : ''}
+            </td>
+            <td>
+              <span class="badge badge-info">${cls.student_count || 0}</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="progress-professional me-2" style="width: 60px;">
+                  <div class="progress-bar-professional" style="width: ${cls.today_percentage || 0}%"></div>
+                </div>
+                <small>${cls.today_present || 0}/${cls.today_total || 0}</small>
+              </div>
+            </td>
+            <td>
+              <span class="badge ${cls.avg_percentage >= 80 ? 'badge-success' : cls.avg_percentage >= 60 ? 'badge-warning' : 'badge-danger'}">
+                ${Math.round(cls.avg_percentage || 0)}%
+              </span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <a href="/class/${cls.id}/attendance" class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-check"></i>
+                </a>
+                <a href="/reports/class/${cls.id}" class="btn btn-outline-info btn-sm">
+                  <i class="fas fa-chart-bar"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      initializeCharts() {
+        // Attendance Trend Chart
+        const trendCtx = document.getElementById('attendanceTrendChart');
+        this.charts.trend = new Chart(trendCtx, {
+          type: 'line',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'Attendance Rate',
+              data: [85, 88, 82, 90, 87, 85, 89],
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                  callback: value => value + '%'
+                }
+              }
+            }
+          }
+        });
+
+        // Today's Overview Chart
+        const overviewCtx = document.getElementById('todayOverviewChart');
+        this.charts.overview = new Chart(overviewCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Present', 'Absent', 'Late', 'Excused'],
+            datasets: [{
+              data: [75, 15, 7, 3],
+              backgroundColor: ['#059669', '#dc2626', '#d97706', '#0891b2'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        });
+      }
+
+      setupEventListeners() {
+        // Global search
+        document.getElementById('globalSearch').addEventListener('input', (e) => {
+          this.handleGlobalSearch(e.target.value);
+        });
+
+        // Trend period buttons
+        document.querySelectorAll('input[name="trendPeriod"]').forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            this.updateTrendChart(e.target.id);
+          });
+        });
+      }
+
+      handleGlobalSearch(query) {
+        if (query.length < 2) return;
+        // Implement global search functionality
+        console.log('Searching for:', query);
+      }
+
+      updateTrendChart(period) {
+        // Update chart data based on selected period
+        console.log('Updating trend chart for period:', period);
+      }
+
+      async fetchJSON(url) {
+        try {
+          const response = await fetch(url);
+          return await response.json();
+        } catch (error) {
+          console.error('Fetch error:', error);
+          return {};
+        }
+      }
+    }
+
+    // Global functions
+    function quickMarkAttendance() {
+      window.toastManager?.show('Quick attendance feature coming soon!', 'info');
+    }
+
+    function exportData() {
+      window.toastManager?.show('Exporting data...', 'info');
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      window.dashboard = new ProfessionalDashboard();
+    });
+  </script>
+</body>
+</html>

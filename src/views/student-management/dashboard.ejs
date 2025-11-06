@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> - Attendance Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .student-card { 
+      background: white; 
+      border-radius: 12px; 
+      padding: 20px; 
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08); 
+      margin-bottom: 15px;
+      transition: all 0.3s;
+    }
+    .student-card:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+    .header-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 0;
+      margin-bottom: 30px;
+    }
+    .filter-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .status-badge.active { background: #28a745; }
+    .status-badge.inactive { background: #dc3545; }
+    .attendance-bar {
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      background: #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-graduation-cap me-2"></i>Attendance MS
+      </a>
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i><%= currentUser.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="/logout" class="d-inline">
+                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="mb-2">
+            <i class="fas fa-users me-3"></i>Student Management
+          </h1>
+          <p class="mb-0 opacity-90">Centralized place to manage all student information</p>
+        </div>
+        <div class="col-md-4 text-end">
+          <a href="/manage/students/new" class="btn btn-warning me-2">
+            <i class="fas fa-user-plus me-2"></i>Add Student
+          </a>
+          <a href="/dashboard" class="btn btn-light">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <% if (flash) { %>
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i><%= flash.message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+
+    <!-- Filters and Actions -->
+    <div class="filter-card">
+      <form method="get" action="/manage/students">
+        <div class="row align-items-end">
+          <div class="col-md-3">
+            <label for="class_id" class="form-label">Filter by Class</label>
+            <select class="form-select" name="class_id" id="class_id">
+              <option value="">All Classes</option>
+              <% classes.forEach(classItem => { %>
+                <option value="<%= classItem.id %>" <%= filters.class_id == classItem.id ? 'selected' : '' %>>
+                  <%= classItem.name %><% if (classItem.section) { %> - Section <%= classItem.section %><% } %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-select" name="status" id="status">
+              <option value="">All Status</option>
+              <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+              <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="search" class="form-label">Search</label>
+            <input type="text" class="form-control" name="search" id="search" 
+                   placeholder="Name, roll number, or email" value="<%= filters.search || '' %>">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-search me-1"></i>Filter
+            </button>
+          </div>
+        </div>
+      </form>
+      
+      <hr>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="btn-group" role="group">
+            <button class="btn btn-outline-success" onclick="showImportModal()">
+              <i class="fas fa-upload me-1"></i>Import CSV
+            </button>
+            <a href="/manage/students/export?<%= new URLSearchParams(filters).toString() %>" class="btn btn-outline-info">
+              <i class="fas fa-download me-1"></i>Export CSV
+            </a>
+            <button class="btn btn-outline-warning" onclick="showQuickAttendance()">
+              <i class="fas fa-check-double me-1"></i>Quick Attendance
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 text-end">
+          <span class="badge bg-primary fs-6">
+            <i class="fas fa-users me-1"></i><%= students.length %> Students
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Students List -->
+    <div class="row">
+      <% if (students.length === 0) { %>
+        <div class="col-12">
+          <div class="student-card text-center">
+            <i class="fas fa-user-graduate fa-4x text-muted mb-4"></i>
+            <h4>No Students Found</h4>
+            <p class="text-muted">Add your first student or adjust your filters</p>
+            <a href="/manage/students/new" class="btn btn-primary">
+              <i class="fas fa-user-plus me-2"></i>Add First Student
+            </a>
+          </div>
+        </div>
+      <% } else { %>
+        <% students.forEach(student => { %>
+          <div class="col-lg-6 col-xl-4 mb-3">
+            <div class="student-card">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1 fw-bold">
+                    <i class="fas fa-user me-2 text-primary"></i><%= student.name %>
+                  </h6>
+                  <div class="d-flex gap-2 mb-2">
+                    <small class="text-muted">Roll: <%= student.roll_number %></small>
+                    <span class="badge status-badge <%= student.enrollment_status %>">
+                      <%= student.enrollment_status %>
+                    </span>
+                  </div>
+                  <small class="text-muted">
+                    <i class="fas fa-chalkboard me-1"></i><%= student.class_name %>
+                    <% if (student.section) { %> - Section <%= student.section %><% } %>
+                  </small>
+                </div>
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/manage/students/<%= student.id %>/edit">
+                      <i class="fas fa-edit me-2"></i>Edit
+                    </a></li>
+                    <li><a class="dropdown-item" href="/parent-reports/student/<%= student.id %>">
+                      <i class="fas fa-chart-line me-2"></i>View Report
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteStudent(<%= student.id %>, '<%= student.name %>')">
+                      <i class="fas fa-trash me-2"></i>Delete
+                    </a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Contact Information -->
+              <div class="mb-3">
+                <% if (student.email || student.phone) { %>
+                  <div class="small text-muted mb-1">Student Contact:</div>
+                  <% if (student.email) { %>
+                    <div class="small"><i class="fas fa-envelope me-1"></i><%= student.email %></div>
+                  <% } %>
+                  <% if (student.phone) { %>
+                    <div class="small"><i class="fas fa-phone me-1"></i><%= student.phone %></div>
+                  <% } %>
+                <% } %>
+                
+                <% if (student.parent_email || student.parent_phone) { %>
+                  <div class="small text-muted mb-1 mt-2">Parent Contact:</div>
+                  <% if (student.parent_email) { %>
+                    <div class="small"><i class="fas fa-envelope me-1"></i><%= student.parent_email %></div>
+                  <% } %>
+                  <% if (student.parent_phone) { %>
+                    <div class="small"><i class="fas fa-phone me-1"></i><%= student.parent_phone %></div>
+                  <% } %>
+                <% } %>
+              </div>
+
+              <!-- Attendance Summary -->
+              <% if (student.total_attendance > 0) { %>
+                <div class="mb-2">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-muted">Attendance</small>
+                    <span class="badge <%= student.attendance_percentage >= 80 ? 'bg-success' : student.attendance_percentage >= 60 ? 'bg-warning' : 'bg-danger' %>">
+                      <%= Math.round(student.attendance_percentage || 0) %>%
+                    </span>
+                  </div>
+                  <div class="attendance-bar">
+                    <div class="h-100 <%= student.attendance_percentage >= 80 ? 'bg-success' : student.attendance_percentage >= 60 ? 'bg-warning' : 'bg-danger' %>" 
+                         style="width: <%= student.attendance_percentage || 0 %>%"></div>
+                  </div>
+                  <small class="text-muted">
+                    <%= student.present_count %>/<%= student.total_attendance %> days present
+                  </small>
+                </div>
+              <% } else { %>
+                <div class="text-muted small">No attendance records yet</div>
+              <% } %>
+
+              <!-- Notes -->
+              <% if (student.notes) { %>
+                <div class="mt-2 pt-2 border-top">
+                  <small class="text-muted">
+                    <i class="fas fa-sticky-note me-1"></i><%= student.notes %>
+                  </small>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Import Students from CSV</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="post" action="/manage/students/import" enctype="multipart/form-data">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="import_class_id" class="form-label">Select Class</label>
+              <select class="form-select" name="class_id" id="import_class_id" required>
+                <option value="">Choose class...</option>
+                <% classes.forEach(classItem => { %>
+                  <option value="<%= classItem.id %>">
+                    <%= classItem.name %><% if (classItem.section) { %> - Section <%= classItem.section %><% } %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="csvFile" class="form-label">CSV File</label>
+              <input type="file" class="form-control" name="csvFile" id="csvFile" accept=".csv" required>
+            </div>
+            <div class="alert alert-info">
+              <strong>CSV Format:</strong><br>
+              Name, Roll Number, Email, Phone, Parent Email, Parent Phone, Status, Notes<br>
+              <small>First row should contain headers. Email, Phone, Parent contacts, Status, and Notes are optional.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Import Students</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function showImportModal() {
+      new bootstrap.Modal(document.getElementById('importModal')).show();
+    }
+
+    function deleteStudent(id, name) {
+      if (confirm(`Are you sure you want to delete ${name}? This will also delete all attendance records.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/manage/students/${id}/delete`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    function showQuickAttendance() {
+      alert('Quick Attendance feature - would show modal to mark attendance for all students');
+    }
+  </script>
+</body>
+</html>

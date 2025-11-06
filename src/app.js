@@ -23,6 +23,7 @@ import helpRouter from './routes/help.js';
 import parentReportsRouter from './routes/parent-reports.js';
 import notificationsRouter from './routes/notifications.js';
 import alertsRouter from './routes/alerts.js';
+import studentManagementRouter from './routes/student-management.js';
 
 dotenv.config();
 
@@ -89,6 +90,7 @@ app.use('/', helpRouter);
 app.use('/', parentReportsRouter);
 app.use('/', notificationsRouter);
 app.use('/', alertsRouter);
+app.use('/', studentManagementRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ ok: true });
